@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha256-KXn5puMvxCw+dAYznun+drMdG1IFl3agK0p/pqT9KAo= sha512-2e8qq0ETcfWRI4HJBzQiA3UoyFk6tbNyG+qSaIBZLyW9Xf3sWZHN/lxe9fTh1U45DpPf07yj94KsUHHWe4Yk1A==" crossorigin="anonymous"></script>
-    <title><?php echo $page_title; ?></title>
+    <title><?php echo 'TV Track - '.$page_title; ?></title>
 </head>
 <body>
 <nav class="navbar navbar-inverse">
@@ -22,13 +22,14 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="#">TV Track</a>
+                <a class="navbar-brand" href="main">TV Track</a>
             </div>
 
             <!-- Collect the nav links, forms, and other content for toggling -->
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                 <ul class="nav navbar-nav">
-                    <li class="active"><a href="#">Siguiendo</a></li>
+                    <li><a href="following">Siguiendo</a></li>
+                    <li><a href="series">Series</a></li>
                 </ul>
 
             </div><!-- /.navbar-collapse -->
@@ -36,4 +37,3 @@
     </div>
 </nav>
 <div class="container">
-<h1><?php echo $page_title; ?></h1>

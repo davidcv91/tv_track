@@ -7,9 +7,6 @@
     }
 
     $(document).ready(function () {
-        $('tbody tr').each(function () {
-
-        });
 
         $('.download').click(function () {
             var id_serie = $(this).attr('id_serie');
@@ -44,13 +41,13 @@
         font-weight: bold;
     }
     .ok{
-        background-color: #6aa84f;
+        background-color: #5cb85c;
     }
     .warning{
-        background-color: darkorange;
+        background-color: #f0ad4e !important;
     }
     .pending{
-        background-color: #cc4125;
+        background-color: #d9534f;
     }
 
     th:not(.name_col), td:not(.name_col){
@@ -73,7 +70,7 @@
         </thead>
         <tbody>
             <?php if(!empty($series_following)) foreach($series_following as $serie) { ?>
-            <tr id="<?php echo 'id_'.$serie['id']; ?>" class="test">
+            <tr id="<?php echo 'id_'.$serie['id']; ?>">
                 <td class="status <?php echo $serie['status']; ?>"></td>
                 <td class="name_col"><?php echo $serie['name']; ?></td>
                 <td><?php echo $serie['final_episode']; ?></td>
@@ -81,7 +78,7 @@
                 <td class="last_downloaded"><?php echo $serie['last_downloaded']; ?></td>
                 <td>
                     <a class="download" style="font-size:25px;" href="#" id_serie="<?php echo $serie['id']; ?>">
-                        <span class="glyphicon glyphicon glyphicon-cloud-download" aria-hidden="true"></span>
+                        <span class="glyphicon glyphicon glyphicon glyphicon-plus-sign" aria-hidden="true"></span>
                     </a>
                 </td>
             </tr>

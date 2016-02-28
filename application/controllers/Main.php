@@ -1,32 +1,51 @@
-<?php
-defined('BASEPATH') OR exit('No direct script access allowed');
+<?php defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Main extends CI_Controller {
 
-    public function __construct()
-    {
+    public function __construct() {
         parent::__construct();
-        $this->config->load('tvtrack');
         $this->load->model('Series_model');
     }
 
-    public function index()
-    {
-        $vars['page_title'] = '';
+    public function index() {
+        if($this->session->has_userdata('login')) redirect('following');
+        redirect('login');
+    }
 
-        $this->load->helper('date');
-        $day_name = $this->config->item('day_name');
+    public function login() {
+        $vars['page_title'] = 'Login';
+        $this->load->view('login', $vars);
+    }
+
+    public function check_login() {
+        $this->load->model('Login_model');
+        $username = $this->input->post('username');
+        $password = $this->input->post('password');
+
+        $result = $this->Login_model->check_user_password($username, $password);
+        if($result) {
+            $this->session->set_userdata('login', TRUE);
+            redirect('following');
+        }
+        else {
+            //$this->Login_model->login_attempts($username, $password);
+            redirect('login');
+        }
+    }
+
+    public function following() {
+        $vars['page_title'] = 'Siguiendo';
 
         $result = $this->Series_model->get_following();
 
         foreach($result as $key => $serie)
         {
             if($serie['vo']) $serie['name'] = $serie['name'].' [VOSE]';
-            $serie['day_new_episode'] = $day_name[$serie['day_new_episode']];
-            $serie['final_episode'] = $serie['season'].'x'.$this->format_number($serie['episodes']);
+            $serie['day_new_episode'] = get_letter_num_day($serie['day_new_episode']);
+            $serie['final_episode'] = $serie['season'].'x'.format_number($serie['episodes']);
 
             if(!empty($serie['episode_downloaded']))
-                $serie['last_downloaded'] = $serie['season'].'x'.$this->format_number($serie['episode_downloaded']);
+                $serie['last_downloaded'] = $serie['season'].'x'.format_number($serie['episode_downloaded']);
             else $serie['last_downloaded'] = '-';
 
             //$today = date();
@@ -49,8 +68,23 @@ class Main extends CI_Controller {
 
     }
 
-    public function download_episode()
-    {
+    public function series() {
+        $vars['page_title'] = 'Siguiendo';
+
+        $result = $this->Series_model->get_series();
+
+        foreach($result as $key => $serie)
+        {
+            $serie['day_new_episode'] = get_letter_num_day($serie['day_new_episode']);
+
+            $result[$key] = $serie;
+        }
+        $vars['series'] = $result;
+
+        $this->load->view('series', $vars);
+    }
+
+    public function download_episode() {
         $id_serie = $this->input->post('id_serie');
 
         $res = $this->Series_model->increment_episode($id_serie);
@@ -58,8 +92,19 @@ class Main extends CI_Controller {
         exit;
     }
 
-    private function format_number($num_episode)
-    {
-        return sprintf("%02d", $num_episode);
+    public function edit_field_serie() {
+        $id_serie = $this->input->post('id_serie');
+        $field = $this->input->post('field');
+        $value = $this->input->post('value');
+
+        if($field == 'day_new_episode' AND !is_numeric($value)) {
+           $value = get_num_day($value);
+        }
+
+        $res = $this->Series_model->edit_field_serie($id_serie, $field, $value);
+        echo json_encode($res);
+        exit;
     }
+
+    
 }
