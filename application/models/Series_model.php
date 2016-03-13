@@ -15,6 +15,7 @@ class Series_model extends CI_Model {
     }
 
     public function get_series() {
+        $this->db->order_by('day_new_episode', 'ASC');
         $query = $this->db->get('series');
         if($query->num_rows() > 0) {
             return $query->result_array();
@@ -45,9 +46,21 @@ class Series_model extends CI_Model {
         return $result->row()->count;
     }
 
+    public function start_tracking($id_serie) {
+        $data = array(
+            'id_serie' => $id_serie,
+            'episode_downloaded' => 1,
+        );
+        return $this->db->insert('tracking_downloaded', $data);
+    }
+
     public function edit_field_serie($id_serie, $field, $value) {
         $this->db->set($field, $value);
         $this->db->where('id', $id_serie);
         return $this->db->update('series');
+    }
+
+    public function add_serie($data){
+        return $this->db->insert('series', $data);
     }
 }

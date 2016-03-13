@@ -7,6 +7,7 @@
     }
 
     $(document).ready(function () {
+        $('[data-toggle="tooltip"]').tooltip(); 
 
         $('.download').click(function () {
             var id_serie = $(this).attr('id_serie');
@@ -15,18 +16,25 @@
             $.post({
                 url: '<?php echo base_url().'download_episode'; ?>',
                 data: {'id_serie': id_serie},
-                success: function( resp ) {
-                    $(row).find('.status').each(function() {
-                        $(this).removeClass();
-                        $(this).addClass('status ok');
-                    });
-                    $(row).find('.last_downloaded').each(function() {
-                        var data = $(this).html();
-                        data = data.split('x');
-                        data[1] = format_number(parseInt(data[1])+1);
-                        data = data.join('x');
-                        $(this).html(data);
-                    });
+                success: function( result ) {
+                    result = $.parseJSON(result);
+                    if(result) {
+                        $(row).find('.status').each(function() {
+                            $(this).removeClass();
+                            $(this).addClass('status ok');
+                        });
+                        $(row).find('.last_downloaded').each(function() {
+                            var data = $(this).html();
+                            if(data == '-') location.reload();
+                            else {
+                                data = data.split('x');
+                                data[1] = format_number(parseInt(data[1])+1);
+                                data = data.join('x');
+                                $(this).html(data);
+                                $(this).parent().effect('highlight', '', 1000);
+                            }
+                        });
+                    }
                 }
             });
         });
@@ -43,8 +51,8 @@
     .ok{
         background-color: #5cb85c;
     }
-    .warning{
-        background-color: #f0ad4e !important;
+    .available{
+        background-color: #f0ad4e;
     }
     .pending{
         background-color: #d9534f;
@@ -75,9 +83,9 @@
                 <td class="name_col"><?php echo $serie['name']; ?></td>
                 <td><?php echo $serie['final_episode']; ?></td>
                 <td><?php echo $serie['day_new_episode']; ?></td>
-                <td class="last_downloaded"><?php echo $serie['last_downloaded']; ?></td>
+                <td><span data-toggle="tooltip" data-container="body" data-placement="right" title="<?php echo $serie['last_download']; ?>" class="last_downloaded"><?php echo $serie['last_downloaded']; ?></span></td>
                 <td>
-                    <a class="download" style="font-size:25px;" href="#" id_serie="<?php echo $serie['id']; ?>">
+                    <a data-toggle="tooltip" data-container="body" data-placement="bottom" title="Descargar" class="download" style="font-size:25px;" href="#" id_serie="<?php echo $serie['id']; ?>">
                         <span class="glyphicon glyphicon glyphicon glyphicon-plus-sign" aria-hidden="true"></span>
                     </a>
                 </td>

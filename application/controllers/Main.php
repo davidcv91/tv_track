@@ -28,7 +28,7 @@ class Main extends CI_Controller {
             redirect('following');
         }
         else {
-            //$this->Login_model->login_attempts($username, $password);
+            $this->Login_model->login_attempts($username, $password);
             redirect('login');
         }
     }
@@ -40,32 +40,44 @@ class Main extends CI_Controller {
 
         foreach($result as $key => $serie)
         {
+            $serie['status'] = $this->get_status($serie['tstamp'], $serie['day_new_episode']);
+
             if($serie['vo']) $serie['name'] = $serie['name'].' [VOSE]';
+
             $serie['day_new_episode'] = get_letter_num_day($serie['day_new_episode']);
+
             $serie['final_episode'] = $serie['season'].'x'.format_number($serie['episodes']);
+
+            $serie['last_download'] = (!empty($serie['tstamp'])) ? date('d/m/Y  H:i', strtotime($serie['tstamp'])) : '';
 
             if(!empty($serie['episode_downloaded']))
                 $serie['last_downloaded'] = $serie['season'].'x'.format_number($serie['episode_downloaded']);
             else $serie['last_downloaded'] = '-';
 
-            //$today = date();
-            $today = strtotime(date('Y-m-d H:i:s'));
-            $date_last_download = strtotime($serie['tstamp']);
-
-            $diff = (int) ceil(($today - $date_last_download)/(3600*24)); //to_days
-
-            $status = 'ok';
-            if($diff >= 6 AND $diff < 7) $status = 'warning';
-            else if($diff >= 7) $status = 'pending';
-
-            $serie['status'] = $status;
 
             $result[$key] = $serie;
         }
+
         $vars['series_following'] = $result;
 
         $this->load->view('main', $vars);
+    }
 
+    private function get_status($tstamp, $day_episode)
+    {
+        $today = date('Y-m-d');
+
+        $tstamp_day_download = strtotime(date('Y-m-d', strtotime($tstamp))); 
+        //0 = monday
+        $day_week = jddayofweek($day_episode-1, 1);
+
+        $day_next_episode = date('Y-m-d', strtotime('next '.$day_week, $tstamp_day_download)); 
+
+        $status = 'ok';
+        if ($today == $day_next_episode) $status = 'available';
+        else if ($day_next_episode < $today) $status = 'pending';
+
+        return $status;
     }
 
     public function series() {
@@ -87,7 +99,12 @@ class Main extends CI_Controller {
     public function download_episode() {
         $id_serie = $this->input->post('id_serie');
 
-        $res = $this->Series_model->increment_episode($id_serie);
+        $res = FALSE;
+        if($this->Series_model->exists_tracking($id_serie)) {
+            $res = $this->Series_model->increment_episode($id_serie);
+        }
+        else $res = $this->Series_model->start_tracking($id_serie);
+        
         echo json_encode($res);
         exit;
     }
@@ -104,6 +121,19 @@ class Main extends CI_Controller {
         $res = $this->Series_model->edit_field_serie($id_serie, $field, $value);
         echo json_encode($res);
         exit;
+    }
+
+    public function add_serie() {
+        $data = array(
+            'name' => $this->input->post('name'),
+            'vo' => ($this->input->post('vo')) ? 1 : 0,
+            'season' => $this->input->post('season'),
+            'episodes' => $this->input->post('episodes'),
+            'day_new_episode' => $this->input->post('day_new_episode')
+        );
+
+        $this->Series_model->add_serie($data);
+        redirect('series');
     }
 
     

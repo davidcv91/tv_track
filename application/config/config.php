@@ -378,7 +378,7 @@ $config['encryption_key'] = '';
 */
 $config['sess_driver'] = 'database';
 $config['sess_cookie_name'] = 'tvt_session';
-$config['sess_expiration'] = 0;
+$config['sess_expiration'] = 3600*24*7;
 $config['sess_save_path'] = 'sessions';
 $config['sess_match_ip'] = TRUE;
 $config['sess_time_to_update'] = 300;
