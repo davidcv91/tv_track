@@ -5,8 +5,34 @@
     var errors = false;
 
     $(document).ready(function () {
+        
+        /*Table events*/
+        $('[data-toggle="tooltip"]').tooltip();
 
+        $('table tr').mouseleave(function () {
+             $(this).find('.actions').css('opacity', 0);
+        });
+
+        $('table tr').mouseenter(function () {
+             $(this).find('.actions').css('opacity', 1);
+        });
+
+        $('.change-status').click(function () {
+            var id_serie = $(this).attr('idSerie');
+            var current_status = $(this).attr('currentStatus');
+
+            var status;
+            if(current_status == 1) status = 0;
+            else status = 1;
+
+            edit_field(id_serie, 'status', status);
+            location.reload();
+        });
+        /*End table events*/
+
+        /*Editable cells events*/
         $('td').dblclick(function () {
+            if($(this).hasClass('non-editable')) return;
             original_value = $(this).html();
             $(this).attr('contenteditable', true);
             $(this).focus();
@@ -19,15 +45,16 @@
             }
             else if (e.keyCode == 13) { //enter
                 e.preventDefault();
-                $(this).blur(); //save value
+                save_value($(this)); //save value
             }
         });
 
         $('td').blur(function() {
-            $(this).removeAttr('contenteditable');
             save_value($(this));
         });
+        /*End editable cells events*/
 
+        /*Dialog events*/
         $('#submit_new_serie').click(function () {
             var name = $('input[name="name"]').val();
             var vo = $('input[name="vo"]').is(':checked');
@@ -50,37 +77,35 @@
 
             if(!errors) {
                 $('form').submit();
-                //$('#modal_add_serie').modal('hide');
             }
         });
 
-        $('#modal_add_serie').on('hidden.bs.modal', function (e) {
+        $('#modal_add_serie').on('hidden.bs.modal', function () {
             $(this).find('input[type="text"], input[type="number"]').val('');
             $(this).find('input[type="checkbox"]').removeAttr('checked');
             $(this).find('select').val(0);
             $(this).find('.form-group').removeClass('has-error has-success');
         });
-
-
+        /*End dialog events*/
     });
 
-    function has_error(element) {
-        errors = true;
-        $(element).parent().removeClass('has-success').addClass('has-error');
-    }
+    function save_value(element)
+    {
+        element.removeAttr('contenteditable');
 
-    function has_success(element) {
-        $(element).parent().removeClass('has-error').addClass('has-success');
-    }
-
-    function save_value(element) {
         var id = element.parent('tr').attr('id');
         var field = element.attr('colname');
-        var value = element.html();
-        if(original_value == value) return; 
+        var new_value = element.html();
+
+        if(original_value == new_value) return; 
 
         element.effect('highlight', '', 1000);
 
+        edit_field(id, field, new_value, element);
+    }
+
+    function edit_field(id, field, value, element) 
+    {
         $.post(
             '<?php echo base_url().'edit_field_serie'; ?>',
             {
@@ -90,12 +115,23 @@
             },
             function( result ) {
                 if(!result) {
-                    element.html(original_value);
+                    if(element != undefined) element.html(original_value);
                     $('.alert-danger').html('Ha ocurrido un error');
                     $('.alert-danger').show().delay(3000).fadeOut();
                 }
-            }, 'json'
+            }
         );
+    }
+
+    function has_error(element) 
+    {
+        errors = true;
+        $(element).parent().removeClass('has-success').addClass('has-error');
+    }
+
+    function has_success(element) 
+    {
+        $(element).parent().removeClass('has-error').addClass('has-success');
     }
 </script>
 <style>
@@ -118,11 +154,20 @@
         color: white;
         opacity: 1;
     }
-
-
+    .btn-circle {
+        width: 30px;
+        height: 30px;
+        text-align: center;
+        padding: 6px 0;
+        font-size: 12px;
+        border-radius: 50%;
+    }
+    .glyphicon{
+        font-size: 15px;
+    }
 </style>
     <div class='alert alert-danger' role='alert' style='display:none;'></div>
-    <table class='table table-hover'>
+    <table class='table table-hover table-striped'>
         <thead>
             <tr>
                 <th class='name_col'>Serie</th>
@@ -130,74 +175,36 @@
                 <th>Temporada</th>
                 <th>Capítulo final</th>
                 <th>Día emisión</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
             <?php if(!empty($series)) foreach($series as $serie) { ?>
             <tr id='<?php echo $serie['id']; ?>'>
-                <td colname='name' class='name_col'><?php echo $serie['name']; ?></td>
+                <td colname='name' class='name_col non-editable'><?php echo $serie['name']; ?></td>
                 <td colname='vo'><?php echo $serie['vo']; ?></td>
                 <td colname='season'><?php echo $serie['season']; ?></td>
                 <td colname='episodes'><?php echo $serie['episodes']; ?></td>
                 <td colname='day_new_episode'><?php echo $serie['day_new_episode']; ?></td>
+                <td class='non-editable actions' style='opacity: 0;'>
+                    <?php if($serie['status'] == 1) { ?>
+                        <button type="button" class="change-status btn btn-sm btn-danger btn-circle" data-toggle="tooltip" data-container="body" data-placement="bottom" title="Finalizada" currentStatus="1" idSerie="<?php echo $serie['id']; ?>">
+                            <span class="glyphicon glyphicon-pause"></span>
+                        </button>
+                     <?php } else { ?>
+                        <button type="button" class="change-status btn btn-sm btn-success btn-circle" data-toggle="tooltip" data-container="body" data-placement="bottom" title="Reanudar" currentStatus="0" idSerie="<?php echo $serie['id']; ?>">
+                            <span class="glyphicon glyphicon-play"></span>
+                        </button>
+                    <?php } ?>
+                </td>
             </tr>
             <?php } ?>
         </tbody>
     </table>
     <button type='button' class='btn btn-primary pull-right' data-toggle='modal' data-target='#modal_add_serie'>
 Nueva serie</button>
-     
-<div class='modal fade' id='modal_add_serie' data-backdrop='static'> 
-    <div class='modal-dialog modal-sm' >
-        <div class='modal-content'>
-            <div class='modal-header bg-primary'>
-                <button type='button' class='close' data-dismiss='modal' aria-hidden='true'>×</button>
-                    <h4 class='modal-title'>Nueva serie</h4>
-            </div>
-            <div class='modal-body'>
-                <form method='POST' action='add_serie'>
-                    <div class='form-group'>
-                        <label class='control-label' for='name'>Nombre:</label>
-                        <input class='form-control' name='name' type='text'>
-                    </div>
 
-                    <div class='checkbox'>
-                        <label>
-                            <input name='vo' type='checkbox'><strong>VO?</strong>
-                        </label>
-                    </div>
 
-                    <div class='form-group'>
-                        <label class='control-label' for='season'>Temporada:</label>
-                        <input class='form-control' name='season' type='number' min='0' required>
-                    </div>
-
-                    <div class='form-group'>
-                        <label class='control-label' for='episodes'>Episodios de la temporada:</label>
-                        <input class='form-control' name='episodes' type='number' min='1' required>
-                    </div>
-
-                    <div class='form-group'>
-                        <label class='control-label' for='day_new_episode'>Día de emisión:</label>
-                        <select class='form-control' name='day_new_episode' required>
-                            <option value='0'>Selecciona un día</option>
-                            <option value='1'>Lunes</option>
-                            <option value='2'>Martes</option>
-                            <option value='3'>Miércoles</option>
-                            <option value='4'>Jueves</option>
-                            <option value='5'>Viernes</option>
-                            <option value='6'>Sábado</option>
-                            <option value='7'>Domingo</option>
-                        </select>
-                    </div>
-                </form>
-            </div>
-            <div class='modal-footer'>
-                <button type='button' class='btn btn-primary' id='submit_new_serie'>Ok</button>
-            </div>
-        </div><!-- /.modal-content -->
-    </div><!-- /.modal-dialog -->
-</div><!-- /.modal -->
-    
+<?php $this->load->view('new_serie_dialog'); ?>
 
 <?php $this->load->view('footer'); ?>

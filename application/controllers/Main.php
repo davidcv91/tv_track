@@ -34,6 +34,9 @@ class Main extends CI_Controller {
     }
 
     public function following() {
+
+        $this->lang->load('calendar', 'es');
+
         $vars['page_title'] = 'Siguiendo';
 
         $result = $this->Series_model->get_following();
@@ -42,18 +45,32 @@ class Main extends CI_Controller {
         {
             $serie['status'] = $this->get_status($serie['tstamp'], $serie['day_new_episode']);
 
-            if($serie['vo']) $serie['name'] = $serie['name'].' [VOSE]';
+            if($serie['vo']) $serie['name'] = $serie['name'].' <span class="label label-info">VOSE</span>';
 
             $serie['day_new_episode'] = get_letter_num_day($serie['day_new_episode']);
 
             $serie['final_episode'] = $serie['season'].'x'.format_number($serie['episodes']);
 
-            $serie['last_download'] = (!empty($serie['tstamp'])) ? date('d/m/Y  H:i', strtotime($serie['tstamp'])) : '';
+            if (!empty($serie['tstamp'])) {
+                $date_tstamp = strtotime($serie['tstamp']);
+
+                $day_name_date = strtolower(date('D', $date_tstamp));
+                $day_name = lang('cal_'.$day_name_date);
+                
+                $day = date('d', $date_tstamp);
+
+                $month_name_date = strtolower(date('M', $date_tstamp));
+                $month_name = lang('cal_'.$month_name_date);
+
+                $hour = date('H:i', $date_tstamp);
+
+                $serie['last_download'] = $day_name.' '.$day.' '.$month_name.' '.$hour;
+            }
+            else $serie['last_download'] = '';
 
             if(!empty($serie['episode_downloaded']))
                 $serie['last_downloaded'] = $serie['season'].'x'.format_number($serie['episode_downloaded']);
             else $serie['last_downloaded'] = '-';
-
 
             $result[$key] = $serie;
         }
@@ -89,6 +106,12 @@ class Main extends CI_Controller {
         {
             $serie['day_new_episode'] = get_letter_num_day($serie['day_new_episode']);
 
+            if($serie['status'] == 1) {
+                $serie['name'] = '<span class="label label-success">En emisión</span>&nbsp;' . $serie['name'];
+            }
+            else $serie['name'] = '<span class="label label-danger">Pendiente</span>&nbsp;' . $serie['name'];
+            
+
             $result[$key] = $serie;
         }
         $vars['series'] = $result;
@@ -104,6 +127,19 @@ class Main extends CI_Controller {
             $res = $this->Series_model->increment_episode($id_serie);
         }
         else $res = $this->Series_model->start_tracking($id_serie);
+        
+        echo json_encode($res);
+        exit;
+    }
+
+    public function postpone_episode() {
+        $id_serie = $this->input->post('id_serie');
+
+        $res = FALSE;
+        if($this->Series_model->exists_tracking($id_serie)) {
+            $res = $this->Series_model->postpone_episode($id_serie);
+        }
+        else $res = TRUE;
         
         echo json_encode($res);
         exit;

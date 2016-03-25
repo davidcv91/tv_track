@@ -7,9 +7,17 @@
     }
 
     $(document).ready(function () {
+
         $('[data-toggle="tooltip"]').tooltip(); 
 
-        $('.download').click(function () {
+        $('table tr').mouseleave(function () {
+            $(this).find('.actions').css('opacity', 0);
+        });
+        $('table tr').mouseenter(function () {
+            $(this).find('.actions').css('opacity', 1);
+        });
+
+        $('#download').click(function () {
             var id_serie = $(this).attr('id_serie');
             var row = '#id_'+id_serie;
 
@@ -33,6 +41,25 @@
                                 $(this).html(data);
                                 $(this).parent().effect('highlight', '', 1000);
                             }
+                        });
+                    }
+                }
+            });
+        });
+
+        $('#postpone').click(function () {
+            var id_serie = $(this).attr('id_serie');
+            var row = '#id_'+id_serie;
+
+            $.post({
+                url: '<?php echo base_url().'postpone_episode'; ?>',
+                data: {'id_serie': id_serie},
+                success: function( result ) {
+                    result = $.parseJSON(result);
+                    if(result) {
+                        $(row).find('.status').each(function() {
+                            $(this).removeClass();
+                            $(this).addClass('status ok');
                         });
                     }
                 }
@@ -64,6 +91,17 @@
     td{
         vertical-align: middle !important;
     }
+    .btn-circle {
+        width: 30px;
+        height: 30px;
+        text-align: center;
+        padding: 6px 0;
+        font-size: 12px;
+        border-radius: 50%;
+    }
+    .glyphicon{
+        font-size: 15px;
+    }
 </style>
     <table class="table table-hover">
         <thead>
@@ -84,10 +122,14 @@
                 <td><?php echo $serie['final_episode']; ?></td>
                 <td><?php echo $serie['day_new_episode']; ?></td>
                 <td><span data-toggle="tooltip" data-container="body" data-placement="right" title="<?php echo $serie['last_download']; ?>" class="last_downloaded"><?php echo $serie['last_downloaded']; ?></span></td>
-                <td>
-                    <a data-toggle="tooltip" data-container="body" data-placement="bottom" title="Descargar" class="download" style="font-size:25px;" href="#" id_serie="<?php echo $serie['id']; ?>">
-                        <span class="glyphicon glyphicon glyphicon glyphicon-plus-sign" aria-hidden="true"></span>
-                    </a>
+                <td class='actions' style='opacity: 0;'>
+                    <button type="button" id="download" class="btn btn-sm btn-primary btn-circle" data-toggle="tooltip" data-container="body" data-placement="bottom" title="Descargar" id_serie="<?php echo $serie['id']; ?>">
+                        <span class="glyphicon glyphicon-plus-sign"></span>
+                    </button>
+
+                    <button type="button" id="postpone" class="btn btn-sm btn-default btn-circle" data-toggle="tooltip" data-container="body" data-placement="bottom" title="Aplazar" class="download" id_serie="<?php echo $serie['id']; ?>">
+                        <span class="glyphicon glyphicon-time"></span>
+                    </button>
                 </td>
             </tr>
             <?php } ?>

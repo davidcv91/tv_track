@@ -5,6 +5,7 @@ class Series_model extends CI_Model {
 
     public function get_following() {
         $this->db->join('tracking_downloaded t', 's.id = t.id_serie', 'left');
+        $this->db->where('status', 1);
         $this->db->order_by('day_new_episode', 'ASC');
         $query = $this->db->get('series s');
 
@@ -27,6 +28,12 @@ class Series_model extends CI_Model {
     public function increment_episode($id_serie) {
         $this->db->where('id_serie', $id_serie);
         $this->db->set('episode_downloaded', 'episode_downloaded+1', FALSE);
+        $this->db->set('tstamp', date('Y-m-d H:i:s'));
+        return $this->db->update('tracking_downloaded');
+    }
+
+    public function postpone_episode($id_serie) {
+        $this->db->where('id_serie', $id_serie);
         $this->db->set('tstamp', date('Y-m-d H:i:s'));
         return $this->db->update('tracking_downloaded');
     }
