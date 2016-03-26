@@ -29,12 +29,13 @@ class Series_model extends CI_Model {
         $this->db->where('id_serie', $id_serie);
         $this->db->set('episode_downloaded', 'episode_downloaded+1', FALSE);
         $this->db->set('tstamp', date('Y-m-d H:i:s'));
+        $this->db->set('next_episode_tstamp', NULL);
         return $this->db->update('tracking_downloaded');
     }
 
     public function postpone_episode($id_serie) {
         $this->db->where('id_serie', $id_serie);
-        $this->db->set('tstamp', date('Y-m-d H:i:s'));
+        $this->db->set('next_episode_tstamp', date('Y-m-d H:i:s'));
         return $this->db->update('tracking_downloaded');
     }
 

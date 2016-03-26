@@ -107,7 +107,7 @@
     function edit_field(id, field, value, element) 
     {
         $.post(
-            '<?php echo base_url().'edit_field_serie'; ?>',
+            '<?= base_url().'edit_field_serie'; ?>',
             {
                 'id_serie': id,
                 'field': field,
@@ -180,20 +180,20 @@
         </thead>
         <tbody>
             <?php if(!empty($series)) foreach($series as $serie) { ?>
-            <tr id='<?php echo $serie['id']; ?>'>
-                <td colname='name' class='name_col non-editable'><?php echo $serie['name']; ?></td>
-                <td colname='vo'><?php echo $serie['vo']; ?></td>
-                <td colname='season'><?php echo $serie['season']; ?></td>
-                <td colname='episodes'><?php echo $serie['episodes']; ?></td>
-                <td colname='day_new_episode'><?php echo $serie['day_new_episode']; ?></td>
+            <tr id='<?= $serie['id']; ?>'>
+                <td colname='name' class='name_col non-editable'><?= $serie['name']; ?></td>
+                <td colname='vo'><?= $serie['vo']; ?></td>
+                <td colname='season'><?= $serie['season']; ?></td>
+                <td colname='episodes'><?= $serie['episodes']; ?></td>
+                <td colname='day_new_episode'><?= $serie['day_new_episode']; ?></td>
                 <td class='non-editable actions' style='opacity: 0;'>
                     <?php if($serie['status'] == 1) { ?>
-                        <button type="button" class="change-status btn btn-sm btn-danger btn-circle" data-toggle="tooltip" data-container="body" data-placement="bottom" title="Finalizada" currentStatus="1" idSerie="<?php echo $serie['id']; ?>">
-                            <span class="glyphicon glyphicon-pause"></span>
+                        <button type='button' class='change-status btn btn-sm btn-danger btn-circle' data-toggle='tooltip' data-container='body' data-placement='bottom' title='Finalizada' currentStatus='1' idSerie='<?= $serie['id']; ?>'>
+                            <span class='glyphicon glyphicon-pause'></span>
                         </button>
                      <?php } else { ?>
-                        <button type="button" class="change-status btn btn-sm btn-success btn-circle" data-toggle="tooltip" data-container="body" data-placement="bottom" title="Reanudar" currentStatus="0" idSerie="<?php echo $serie['id']; ?>">
-                            <span class="glyphicon glyphicon-play"></span>
+                        <button type='button' class='change-status btn btn-sm btn-success btn-circle' data-toggle='tooltip' data-container='body' data-placement='bottom' title='Reanudar' currentStatus='0' idSerie='<?= $serie['id']; ?>'>
+                            <span class='glyphicon glyphicon-play'></span>
                         </button>
                     <?php } ?>
                 </td>

@@ -43,7 +43,9 @@ class Main extends CI_Controller {
 
         foreach($result as $key => $serie)
         {
-            $serie['status'] = $this->get_status($serie['tstamp'], $serie['day_new_episode']);
+            $serie_tstamp = $serie['tstamp'];
+            if(!empty($serie['next_episode_tstamp'])) $serie_tstamp = $serie['next_episode_tstamp'];
+            $serie['status'] = $this->get_status($serie_tstamp, $serie['day_new_episode']);
 
             if($serie['vo']) $serie['name'] = $serie['name'].' <span class="label label-info">VOSE</span>';
 
@@ -107,7 +109,7 @@ class Main extends CI_Controller {
             $serie['day_new_episode'] = get_letter_num_day($serie['day_new_episode']);
 
             if($serie['status'] == 1) {
-                $serie['name'] = '<span class="label label-success">En emisión</span>&nbsp;' . $serie['name'];
+                $serie['name'] = '<span class="label label-success">Siguiendo</span>&nbsp;' . $serie['name'];
             }
             else $serie['name'] = '<span class="label label-danger">Pendiente</span>&nbsp;' . $serie['name'];
             

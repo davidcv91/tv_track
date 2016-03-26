@@ -1,5 +1,5 @@
 <?php $this->load->view('header'); ?>
-<script type="text/javascript">
+<script type='text/javascript'>
     function format_number(num)
     {
         if(num < 10) return '0'+num;
@@ -8,6 +8,7 @@
 
     $(document).ready(function () {
 
+        /*Table events*/
         $('[data-toggle="tooltip"]').tooltip(); 
 
         $('table tr').mouseleave(function () {
@@ -17,12 +18,12 @@
             $(this).find('.actions').css('opacity', 1);
         });
 
-        $('#download').click(function () {
-            var id_serie = $(this).attr('id_serie');
+        $('button[name="download"]').click(function () {
+            var id_serie = $(this).attr('idSerie');
             var row = '#id_'+id_serie;
 
             $.post({
-                url: '<?php echo base_url().'download_episode'; ?>',
+                url: '<?= base_url().'download_episode'; ?>',
                 data: {'id_serie': id_serie},
                 success: function( result ) {
                     result = $.parseJSON(result);
@@ -32,27 +33,28 @@
                             $(this).addClass('status ok');
                         });
                         $(row).find('.last_downloaded').each(function() {
-                            var data = $(this).html();
-                            if(data == '-') location.reload();
-                            else {
-                                data = data.split('x');
-                                data[1] = format_number(parseInt(data[1])+1);
-                                data = data.join('x');
-                                $(this).html(data);
-                                $(this).parent().effect('highlight', '', 1000);
-                            }
+                            var season = $(this).attr('season');
+                            var episode = parseInt($(this).attr('episode')) + 1;
+
+                            if(isNaN(episode)) episode = 1;
+                            episode = format_number(episode);
+                            $(this).html(season+'x'+episode);
+
+                            $(this).parent().effect('highlight', '', 1000);
+                            $(this).attr('episode', episode);
                         });
                     }
                 }
             });
         });
 
-        $('#postpone').click(function () {
-            var id_serie = $(this).attr('id_serie');
+        $('button[name="postpone"]').click(function () {
+            var button = $(this).hide();;
+            var id_serie = button.attr('idSerie');
             var row = '#id_'+id_serie;
-
+                        
             $.post({
-                url: '<?php echo base_url().'postpone_episode'; ?>',
+                url: '<?= base_url().'postpone_episode'; ?>',
                 data: {'id_serie': id_serie},
                 success: function( result ) {
                     result = $.parseJSON(result);
@@ -61,10 +63,12 @@
                             $(this).removeClass();
                             $(this).addClass('status ok');
                         });
+                        button.hide();
                     }
                 }
             });
         });
+        /*End table events*/
     });
 </script>
 <style>
@@ -102,12 +106,15 @@
     .glyphicon{
         font-size: 15px;
     }
+    .actions {
+        opacity: 0;
+    }
 </style>
-    <table class="table table-hover">
+    <table class='table table-hover'>
         <thead>
             <tr>
-                <th class="status"></th>
-                <th class="name_col">Serie</th>
+                <th class='status'></th>
+                <th class='name_col'>Serie</th>
                 <th>Final</th>
                 <th>Día disponible</th>
                 <th>Último descargado</th>
@@ -116,20 +123,21 @@
         </thead>
         <tbody>
             <?php if(!empty($series_following)) foreach($series_following as $serie) { ?>
-            <tr id="<?php echo 'id_'.$serie['id']; ?>">
-                <td class="status <?php echo $serie['status']; ?>"></td>
-                <td class="name_col"><?php echo $serie['name']; ?></td>
-                <td><?php echo $serie['final_episode']; ?></td>
-                <td><?php echo $serie['day_new_episode']; ?></td>
-                <td><span data-toggle="tooltip" data-container="body" data-placement="right" title="<?php echo $serie['last_download']; ?>" class="last_downloaded"><?php echo $serie['last_downloaded']; ?></span></td>
-                <td class='actions' style='opacity: 0;'>
-                    <button type="button" id="download" class="btn btn-sm btn-primary btn-circle" data-toggle="tooltip" data-container="body" data-placement="bottom" title="Descargar" id_serie="<?php echo $serie['id']; ?>">
-                        <span class="glyphicon glyphicon-plus-sign"></span>
+            <tr id='<?= 'id_'.$serie['id']; ?>'>
+                <td class='status <?= $serie['status']; ?>'></td>
+                <td class='name_col'><?= $serie['name']; ?></td>
+                <td><?= $serie['final_episode']; ?></td>
+                <td><?= $serie['day_new_episode']; ?></td>
+                <td><span data-toggle='tooltip' data-container='body' data-placement='right' title='<?= $serie['last_download']; ?>' class='last_downloaded' season='<?= $serie['season']; ?>' episode='<?= $serie['episode_downloaded']; ?>'  ><?= $serie['last_downloaded']; ?></span></td>
+                <td class='actions'>
+                    <button type='button' name='download' class='btn btn-sm btn-primary btn-circle' data-toggle='tooltip' data-container='body' data-placement='bottom' title='Descargar' idSerie='<?= $serie['id']; ?>'>
+                        <span class='glyphicon glyphicon-plus-sign'></span>
                     </button>
-
-                    <button type="button" id="postpone" class="btn btn-sm btn-default btn-circle" data-toggle="tooltip" data-container="body" data-placement="bottom" title="Aplazar" class="download" id_serie="<?php echo $serie['id']; ?>">
-                        <span class="glyphicon glyphicon-time"></span>
+                    <?php if($serie['status'] != 'ok') { ?>
+                    <button type='button' name='postpone' class='btn btn-sm btn-default btn-circle' data-toggle='tooltip' data-container='body' data-placement='bottom' title='Posponer' class='download' idSerie='<?= $serie['id']; ?>'>
+                        <span class='glyphicon glyphicon-time'></span>
                     </button>
+                    <?php } ?>
                 </td>
             </tr>
             <?php } ?>
