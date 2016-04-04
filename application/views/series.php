@@ -17,7 +17,7 @@
              $(this).find('.actions').css('opacity', 1);
         });
 
-        $('.change-status').click(function () {
+        $('.btn-change-status').click(function () {
             var id_serie = $(this).attr('idSerie');
             var current_status = $(this).attr('currentStatus');
 
@@ -80,6 +80,29 @@
             }
         });
 
+        $('.btn-edit').click(function() {
+            var modal = $('#modal_edit_serie');
+
+            var row = $(this).closest('tr');
+
+           var value = row.find('td .name').html();
+           $('#modal_edit_serie').find('input[name="name"]').val(value);
+
+           value = Boolean(parseInt(row.find('td[colname="vo"]').html()));
+           $('#modal_edit_serie').find('input[name="vo"]').prop('checked', value);
+
+           value = row.find('td[colname="season"]').html();
+           $('#modal_edit_serie').find('input[name="season"]').val(value);
+
+           value = row.find('td[colname="episodes"]').html();
+           $('#modal_edit_serie').find('input[name="episodes"]').val(value);
+
+           value = row.find('td[colname="day_new_episode"]').attr('numDay');
+           $('#modal_edit_serie').find('select[name="day_new_episode"]').val(value);
+
+            modal.modal('show');
+        });
+
         $('#modal_add_serie').on('hidden.bs.modal', function () {
             $(this).find('input[type="text"], input[type="number"]').val('');
             $(this).find('input[type="checkbox"]').removeAttr('checked');
@@ -116,8 +139,7 @@
             function( result ) {
                 if(!result) {
                     if(element != undefined) element.html(original_value);
-                    $('.alert-danger').html('Ha ocurrido un error');
-                    $('.alert-danger').show().delay(3000).fadeOut();
+                    show_alert_error();
                 }
             }
         );
@@ -133,6 +155,13 @@
     {
         $(element).parent().removeClass('has-error').addClass('has-success');
     }
+
+    function show_alert_error()
+    {
+        $('#alert-error').html('Ha ocurrido un error');
+        $('#alert-error').show().delay(3000).fadeOut();
+    }
+
 </script>
 <style>
     .alert{
@@ -154,19 +183,20 @@
         color: white;
         opacity: 1;
     }
-    .btn-circle {
-        width: 30px;
-        height: 30px;
-        text-align: center;
-        padding: 6px 0;
-        font-size: 12px;
-        border-radius: 50%;
+
+    .btn-square {
+      width: 30px;
+      height: 30px;
+      padding: 6px 0;
+      font-size: 12px;
     }
-    .glyphicon{
-        font-size: 15px;
+
+    .bg-success-custom {
+        background-color: #5cb85c;
+        color: white;
     }
 </style>
-    <div class='alert alert-danger' role='alert' style='display:none;'></div>
+    <div class='alert alert-danger' id='alert-error' role='alert' style='display:none;'></div>
     <table class='table table-hover table-striped'>
         <thead>
             <tr>
@@ -181,30 +211,34 @@
         <tbody>
             <?php if(!empty($series)) foreach($series as $serie) { ?>
             <tr id='<?= $serie['id']; ?>'>
-                <td colname='name' class='name_col non-editable'><?= $serie['name']; ?></td>
+                <td colname='name' class='name_col non-editable'><?= $serie['label'];?><span class='name'><?= $serie['name']; ?></span></td>
                 <td colname='vo'><?= $serie['vo']; ?></td>
                 <td colname='season'><?= $serie['season']; ?></td>
                 <td colname='episodes'><?= $serie['episodes']; ?></td>
-                <td colname='day_new_episode'><?= $serie['day_new_episode']; ?></td>
+                <td colname='day_new_episode' numDay='<?= $serie['day_new_episode']; ?>'><?= $serie['letter_day_new_episode']; ?></td>
                 <td class='non-editable actions' style='opacity: 0;'>
                     <?php if($serie['status'] == 1) { ?>
-                        <button type='button' class='change-status btn btn-sm btn-danger btn-circle' data-toggle='tooltip' data-container='body' data-placement='bottom' title='Finalizada' currentStatus='1' idSerie='<?= $serie['id']; ?>'>
+                        <button type='button' class='btn btn-sm btn-danger btn-square btn-change-status' data-toggle='tooltip' data-container='body' data-placement='bottom' title='Finalizada' currentStatus='1' idSerie='<?= $serie['id']; ?>'>
                             <span class='glyphicon glyphicon-pause'></span>
                         </button>
                      <?php } else { ?>
-                        <button type='button' class='change-status btn btn-sm btn-success btn-circle' data-toggle='tooltip' data-container='body' data-placement='bottom' title='Reanudar' currentStatus='0' idSerie='<?= $serie['id']; ?>'>
+                        <button type='button' class='btn btn btn-sm btn-success btn-square btn-change-status' data-toggle='tooltip' data-container='body' data-placement='bottom' title='Reanudar' currentStatus='0' idSerie='<?= $serie['id']; ?>'>
                             <span class='glyphicon glyphicon-play'></span>
                         </button>
                     <?php } ?>
+                    <button type='button' class='btn btn-sm btn-default btn-square btn-edit' data-toggle='tooltip' data-container='body' data-placement='bottom' title='Editar serie' idSerie='<?= $serie['id']; ?>'>
+                        <span class='glyphicon glyphicon-edit'></span>
+                    </button>
                 </td>
             </tr>
             <?php } ?>
         </tbody>
     </table>
     <button type='button' class='btn btn-primary pull-right' data-toggle='modal' data-target='#modal_add_serie'>
-Nueva serie</button>
+    <span class='glyphicon glyphicon-plus'></span>&nbsp;Nueva serie</button>
 
 
 <?php $this->load->view('new_serie_dialog'); ?>
+<?php $this->load->view('edit_serie_dialog'); ?>
 
 <?php $this->load->view('footer'); ?>
