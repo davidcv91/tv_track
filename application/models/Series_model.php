@@ -68,7 +68,17 @@ class Series_model extends CI_Model {
         return $this->db->update('series');
     }
 
-    public function add_serie($data){
+    public function add_serie($data) {
         return $this->db->insert('series', $data);
+    }
+
+    public function edit_serie($id_serie, $data) {
+        $this->db->where('id', $id_serie);
+        return $this->db->update('series', $data);
+    }
+
+    public function delete_serie($id_serie) {
+        $this->db->where('id', $id_serie);
+        return $this->db->delete('series');
     }
 }

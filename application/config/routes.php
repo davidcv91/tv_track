@@ -7,8 +7,10 @@ $route['translate_uri_dashes'] = FALSE;
 
 $route['download_episode'] = 'main/download_episode';
 $route['postpone_episode'] = 'main/postpone_episode';
-$route['edit_field_serie'] = 'main/edit_field_serie';
-$route['add_serie'] = 'main/add_serie';
 $route['login'] = 'main/login';
 $route['following'] = 'main/following';
-$route['series'] = 'main/series';
+
+$route['change_status'] = 'series/change_status_serie';
+$route['add_serie'] = 'series/add_serie';
+$route['edit_serie'] = 'series/edit_serie';
+$route['delete_serie'] = 'series/delete_serie';

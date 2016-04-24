@@ -5,7 +5,6 @@
     var errors = false;
 
     $(document).ready(function () {
-        
         /*Table events*/
         $('[data-toggle="tooltip"]').tooltip();
 
@@ -18,66 +17,48 @@
         });
 
         $('.btn-change-status').click(function () {
-            var id_serie = $(this).attr('idSerie');
+            var id_serie = $(this).closest('tr').attr('id');
             var current_status = $(this).attr('currentStatus');
 
-            var status;
+            var status = 1;
             if(current_status == 1) status = 0;
-            else status = 1;
 
-            edit_field(id_serie, 'status', status);
-            location.reload();
+            change_status(id_serie, 'status', status);
+            
         });
         /*End table events*/
 
-        /*Editable cells events*/
-        $('td').dblclick(function () {
-            if($(this).hasClass('non-editable')) return;
-            original_value = $(this).html();
-            $(this).attr('contenteditable', true);
-            $(this).focus();
-        });
 
-        $('td').keydown(function(e) {
-            if (e.keyCode == 27) { //esc
-                $(this).html(original_value);
-                $(this).removeAttr('contenteditable');
-            }
-            else if (e.keyCode == 13) { //enter
-                e.preventDefault();
-                save_value($(this)); //save value
-            }
-        });
-
-        $('td').blur(function() {
-            save_value($(this));
-        });
-        /*End editable cells events*/
-
-        /*Dialog events*/
+        /*Modal events*/
         $('#submit_new_serie').click(function () {
-            var name = $('input[name="name"]').val();
-            var vo = $('input[name="vo"]').is(':checked');
-            var season = $('input[name="season"]').val();
-            var episodes = $('input[name="episodes"]').val();
-            var day_new_episode = $('select[name="day_new_episode"]').val();
+            var is_valid = validate_form_modal($('#form_new_serie'));
 
-            errors = false;
-            if(name == '') has_error($('input[name="name"]'));
-            else has_success($('input[name="name"]'));
+            if(is_valid) $('#form_new_serie').submit();
+        });
+        
+        $('#submit_edit_serie').click(function () {
+            var is_valid = validate_form_modal($('#form_edit_serie'));
 
-            if(season == '' || season < 0) has_error($('input[name="season"]'));
-            else has_success($('input[name="season"]'));
+            if(is_valid) $('#form_edit_serie').submit();
+        });
 
-            if(episodes == '' || episodes <= 0) has_error($('input[name="episodes"]'));
-            else has_success($('input[name="episodes"]'));
+        $('#submit_delete_serie').click(function () {
+            
+            $('#form_delete_serie').submit();
+        });
 
-            if(day_new_episode == 0) has_error($('select[name="day_new_episode"]'));
-            else has_success($('select[name="day_new_episode"]'));
+        $('.btn-delete').click(function () {
+            var edit_modal = $('#modal_edit_serie');
+            var name_serie = edit_modal.find('input[name="name"]').val();
+            var id_serie =  edit_modal.find('input[name="id_serie"]').val();
+            edit_modal.modal('hide');
 
-            if(!errors) {
-                $('form').submit();
-            }
+            var delete_modal = $('#modal_delete_serie');
+
+            delete_modal.find('.name_serie').html(name_serie);
+            delete_modal.find('input[name="id_serie"]').val(id_serie);
+
+            delete_modal.modal('show');
         });
 
         $('.btn-edit').click(function() {
@@ -85,69 +66,87 @@
 
             var row = $(this).closest('tr');
 
-           var value = row.find('td .name').html();
-           $('#modal_edit_serie').find('input[name="name"]').val(value);
+            var value = row.find('td .name').html();
+            modal.find('input[name="name"]').val(value);
 
-           value = Boolean(parseInt(row.find('td[colname="vo"]').html()));
-           $('#modal_edit_serie').find('input[name="vo"]').prop('checked', value);
+            value = Boolean(parseInt(row.find('td[colname="vo"]').html()));
+            modal.find('input[name="vo"]').prop('checked', value);
 
-           value = row.find('td[colname="season"]').html();
-           $('#modal_edit_serie').find('input[name="season"]').val(value);
+            value = row.find('td[colname="season"]').html();
+            modal.find('input[name="season"]').val(value);
 
-           value = row.find('td[colname="episodes"]').html();
-           $('#modal_edit_serie').find('input[name="episodes"]').val(value);
+            value = row.find('td[colname="episodes"]').html();
+            modal.find('input[name="episodes"]').val(value);
 
-           value = row.find('td[colname="day_new_episode"]').attr('numDay');
-           $('#modal_edit_serie').find('select[name="day_new_episode"]').val(value);
+            value = row.find('td[colname="day_new_episode"]').attr('numDay');
+            modal.find('select[name="day_new_episode"]').val(value);
+
+            value = $(this).closest('tr').attr('id');
+            modal.find('input[name="id_serie"]').val(value);
 
             modal.modal('show');
         });
 
-        $('#modal_add_serie').on('hidden.bs.modal', function () {
-            $(this).find('input[type="text"], input[type="number"]').val('');
-            $(this).find('input[type="checkbox"]').removeAttr('checked');
-            $(this).find('select').val(0);
-            $(this).find('.form-group').removeClass('has-error has-success');
+        $('.modal').on('hidden.bs.modal', function () {
+            hide_modal($(this))
         });
-        /*End dialog events*/
+
+        /*End modal events*/
     });
 
-    function save_value(element)
+    function change_status(id, field, value) 
     {
-        element.removeAttr('contenteditable');
+        var form = $('#form_change_status');
 
-        var id = element.parent('tr').attr('id');
-        var field = element.attr('colname');
-        var new_value = element.html();
+        form.find('input[name="id_serie"]').val(id);
+        form.find('input[name="field"]').val(field);
+        form.find('input[name="value"]').val(value);
 
-        if(original_value == new_value) return; 
-
-        element.effect('highlight', '', 1000);
-
-        edit_field(id, field, new_value, element);
+        form.submit();
     }
 
-    function edit_field(id, field, value, element) 
+    function validate_form_modal(modal) 
     {
-        $.post(
-            '<?= base_url().'edit_field_serie'; ?>',
-            {
-                'id_serie': id,
-                'field': field,
-                'value': value
-            },
-            function( result ) {
-                if(!result) {
-                    if(element != undefined) element.html(original_value);
-                    show_alert_error();
-                }
-            }
-        );
+        var name_input = $(modal).find('input[name="name"]');
+        var season_input = $(modal).find('input[name="season"]');
+        var episodes_input = $(modal).find('input[name="episodes"]');
+        var day_new_episode_input = $(modal).find('select[name="day_new_episode"]');
+
+        var input_error = [];
+        var input_success = [];
+        if (name_input.val() == '') input_error.push(name_input);
+        else input_success.push(name_input);
+
+        if (season_input.val() == '' || season_input.val() < 0) input_error.push(season_input);
+        else input_success.push(season_input);
+
+        if (episodes_input.val() == '' || episodes_input.val() <= 0) input_error.push(episodes_input);
+        else input_success.push(episodes_input);
+
+        if (day_new_episode_input.val() == 0) input_error.push(day_new_episode_input);
+        else input_success.push(day_new_episode_input);
+
+        $.each(input_error, function () {
+             has_error($(this));
+        });
+
+        $.each(input_success, function () {
+             has_success($(this));
+        });
+
+        if(input_error.length == 0) return true;
+        else return false;
+    }
+
+    function hide_modal(modal) {
+        $(modal).find('input[type="text"], input[type="number"], input[type="hidden"]').val('');
+        $(modal).find('input[type="checkbox"]').removeAttr('checked');
+        $(modal).find('select').val(0);
+        $(modal).find('.form-group').removeClass('has-error has-success');
     }
 
     function has_error(element) 
     {
-        errors = true;
         $(element).parent().removeClass('has-success').addClass('has-error');
     }
 
@@ -156,47 +155,36 @@
         $(element).parent().removeClass('has-error').addClass('has-success');
     }
 
-    function show_alert_error()
-    {
-        $('#alert-error').html('Ha ocurrido un error');
-        $('#alert-error').show().delay(3000).fadeOut();
-    }
-
 </script>
 <style>
-    .alert{
-        position: fixed;
-        top: 15%;
-        right:40%;
-        left:40%;
-        width: auto;
-        z-index: 1;
-        text-align: center;
-    }
     .name_col{
         font-weight: bold;
     }
     th:not(.name_col), td:not(.name_col){
         text-align: center;
     }
-    .close{
-        color: white;
-        opacity: 1;
-    }
-
     .btn-square {
       width: 30px;
       height: 30px;
       padding: 6px 0;
       font-size: 12px;
     }
-
+    .actions {
+        opacity: 0;
+    }
+    .close{
+        color: white;
+        opacity: 1;
+    }
     .bg-success-custom {
         background-color: #5cb85c;
         color: white;
     }
+    .bg-danger-custom{
+        background-color: #d9534f;
+        color: white;
+    }
 </style>
-    <div class='alert alert-danger' id='alert-error' role='alert' style='display:none;'></div>
     <table class='table table-hover table-striped'>
         <thead>
             <tr>
@@ -204,29 +192,32 @@
                 <th>VO</th>
                 <th>Temporada</th>
                 <th>Capítulo final</th>
-                <th>Día emisión</th>
+                <th>Día disponible</th>
                 <th></th>
             </tr>
         </thead>
         <tbody>
             <?php if(!empty($series)) foreach($series as $serie) { ?>
             <tr id='<?= $serie['id']; ?>'>
-                <td colname='name' class='name_col non-editable'><?= $serie['label'];?><span class='name'><?= $serie['name']; ?></span></td>
-                <td colname='vo'><?= $serie['vo']; ?></td>
+                <td class='name_col'>
+                    <?= $serie['label_name']; ?>
+                    <span class='name'><?= $serie['name']; ?></span>
+                </td>
+                <td colname='vo'><?= $serie['vo_img']; ?></td>
                 <td colname='season'><?= $serie['season']; ?></td>
                 <td colname='episodes'><?= $serie['episodes']; ?></td>
                 <td colname='day_new_episode' numDay='<?= $serie['day_new_episode']; ?>'><?= $serie['letter_day_new_episode']; ?></td>
-                <td class='non-editable actions' style='opacity: 0;'>
+                <td class='actions'>
                     <?php if($serie['status'] == 1) { ?>
-                        <button type='button' class='btn btn-sm btn-danger btn-square btn-change-status' data-toggle='tooltip' data-container='body' data-placement='bottom' title='Finalizada' currentStatus='1' idSerie='<?= $serie['id']; ?>'>
+                        <button type='button' class='btn btn-sm btn-danger btn-square btn-change-status' data-toggle='tooltip' data-container='body' data-placement='bottom' title='Finalizada' currentStatus='1'>
                             <span class='glyphicon glyphicon-pause'></span>
                         </button>
                      <?php } else { ?>
-                        <button type='button' class='btn btn btn-sm btn-success btn-square btn-change-status' data-toggle='tooltip' data-container='body' data-placement='bottom' title='Reanudar' currentStatus='0' idSerie='<?= $serie['id']; ?>'>
+                        <button type='button' class='btn btn btn-sm btn-success btn-square btn-change-status' data-toggle='tooltip' data-container='body' data-placement='bottom' title='Reanudar' currentStatus='0'>
                             <span class='glyphicon glyphicon-play'></span>
                         </button>
                     <?php } ?>
-                    <button type='button' class='btn btn-sm btn-default btn-square btn-edit' data-toggle='tooltip' data-container='body' data-placement='bottom' title='Editar serie' idSerie='<?= $serie['id']; ?>'>
+                    <button type='button' class='btn btn-sm btn-default btn-square btn-edit' data-toggle='tooltip' data-container='body' data-placement='bottom' title='Editar serie'>
                         <span class='glyphicon glyphicon-edit'></span>
                     </button>
                 </td>
@@ -238,7 +229,14 @@
     <span class='glyphicon glyphicon-plus'></span>&nbsp;Nueva serie</button>
 
 
-<?php $this->load->view('new_serie_dialog'); ?>
-<?php $this->load->view('edit_serie_dialog'); ?>
+<form method='POST' action='change_status' id='form_change_status'>
+    <input type='hidden' name='id_serie'>
+    <input type='hidden' name='field'>
+    <input type='hidden' name='value'>
+</form>
+
+<?php $this->load->view('modals/new_serie'); ?>
+<?php $this->load->view('modals/edit_serie'); ?>
+<?php $this->load->view('modals/delete_serie'); ?>
 
 <?php $this->load->view('footer'); ?>

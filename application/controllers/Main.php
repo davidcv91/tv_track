@@ -39,11 +39,17 @@ class Main extends CI_Controller {
 
         $result = $this->Series_model->get_following();
 
+        $today = array();
+
         foreach($result as $key => $serie)
         {
             $serie_tstamp = $serie['tstamp'];
             if(!empty($serie['next_episode_tstamp'])) $serie_tstamp = $serie['next_episode_tstamp'];
             $serie['status'] = $this->get_status($serie_tstamp, $serie['day_new_episode']);
+
+            if($serie['status'] != 'ok') {
+                $today[] = $serie['name'].' - '.$serie['season'].'x'.format_number($serie['episode_downloaded']+1);
+            }
 
             if($serie['vo']) $serie['name'] = $serie['name'].' <span class="label label-info">VOSE</span>';
 
@@ -56,14 +62,17 @@ class Main extends CI_Controller {
             }
             else $serie['last_download'] = '';
 
-            if(!empty($serie['episode_downloaded']))
+            if(!empty($serie['episode_downloaded'])) {
                 $serie['last_downloaded'] = $serie['season'].'x'.format_number($serie['episode_downloaded']);
+            }
             else $serie['last_downloaded'] = '-';
 
             $result[$key] = $serie;
         }
 
         $vars['series_following'] = $result;
+
+        $vars['today'] = json_encode($today);
 
         $this->load->view('main', $vars);
     }
@@ -103,28 +112,6 @@ class Main extends CI_Controller {
         return $status;
     }
 
-    public function series() {
-        $vars['page_title'] = 'Mis Series';
-
-        $result = $this->Series_model->get_series();
-
-        foreach($result as $key => $serie)
-        {
-            $serie['letter_day_new_episode'] = get_letter_num_day($serie['day_new_episode']);
-
-            if($serie['status'] == 1) {
-                $serie['label'] = '<span class="label label-success">Siguiendo</span>&nbsp;';
-            }
-            else $serie['label'] = '<span class="label label-danger">Pendiente</span>&nbsp;';
-            
-
-            $result[$key] = $serie;
-        }
-        $vars['series'] = $result;
-
-        $this->load->view('series', $vars);
-    }
-
     public function download_episode() {
 
         $id_serie = $this->input->post('id_serie');
@@ -159,33 +146,4 @@ class Main extends CI_Controller {
         );
         exit;
     }
-
-    public function edit_field_serie() {
-        $id_serie = $this->input->post('id_serie');
-        $field = $this->input->post('field');
-        $value = $this->input->post('value');
-
-        if($field == 'day_new_episode' AND !is_numeric($value)) {
-           $value = get_num_day($value);
-        }
-
-        $res = $this->Series_model->edit_field_serie($id_serie, $field, $value);
-        echo json_encode($res);
-        exit;
-    }
-
-    public function add_serie() {
-        $data = array(
-            'name' => $this->input->post('name'),
-            'vo' => ($this->input->post('vo')) ? 1 : 0,
-            'season' => $this->input->post('season'),
-            'episodes' => $this->input->post('episodes'),
-            'day_new_episode' => $this->input->post('day_new_episode')
-        );
-
-        $this->Series_model->add_serie($data);
-        redirect('series');
-    }
-
-    
 }

@@ -6,45 +6,59 @@
         return num;
     }
 
-    function update_status(row, status)
-    {
-        $(row).find('.status').each(function() {
-            $(this).removeClass();
-            $(this).addClass('status '+status);
-        });
-    }
-
-    function remove_postpone_btn(row)
-    {
-        $(row).find('button[name="postpone"]').each(function() {
-            $(this).hide();
-        });
-    }
-
     function show_alert_error()
     {
         $('#alert-error').html('Ha ocurrido un error');
         $('#alert-error').show().delay(3000).fadeOut();
     }
 
-    function update_last_downloaded_info(row, data)
+    function update_row(row, status, data)
     {
-        $(row).find('.last_downloaded').each(function() {
-            var season = $(this).attr('season');
-            var episode = parseInt($(this).attr('episode')) + 1;
+        $(row).css('background-color', '');
 
-            if (isNaN(episode)) episode = 1;
-            episode = format_number(episode);
-            $(this).html(season+'x'+episode);
+        $(row).closest('tr').find('.status').removeClass().addClass('status '+status);
 
-            $(this).parent().effect('highlight', '', 1000);
-            $(this).attr('episode', episode);
-            $(this).tooltip().attr('data-original-title', data.current_date)
+        $(row).closest('tr').find('button[name="postpone"]').hide();
 
-        });
+
+        if(data != '') {
+            $(row).find('.last_downloaded').each(function() {
+                var season = $(this).attr('season');
+                var episode = parseInt($(this).attr('episode')) + 1;
+
+                if (isNaN(episode)) episode = 1;
+                episode = format_number(episode);
+                $(this).html(season+'x'+episode);
+
+                $(this).parent().effect('highlight', '', 1000);
+                $(this).attr('episode', episode);
+                $(this).tooltip().attr('data-original-title', data.current_date)
+            });
+        }
+    }
+
+    function send_notification() {
+        if(Notification.permission != 'granted') Notification.requestPermission();
+        else {
+            var today = '<?= $today; ?>';
+            today = $.parseJSON(today);
+            
+            var imgs = ['chair', 'glasses', 'movie', 'movie2', 'movie3', 'notif', 'popcorns', 'tv']
+            var n = Math.floor((Math.random() * imgs.length));
+
+            var data = {
+                icon: '<?= base_url(); ?>'+'assets/img/'+imgs[n]+'.png',
+                body: today.join('\n')
+            };
+
+            var notif = new Notification('', data);
+            setTimeout( function() { notif.close() }, 5000);
+        }
     }
 
     $(document).ready(function () {
+
+        send_notification();
 
         /*Table events*/
         $('[data-toggle="tooltip"]').tooltip(); 
@@ -54,6 +68,10 @@
         });
         $('table tr').mouseenter(function () {
             $(this).find('.actions').css('opacity', 1);
+        });
+
+        $('.pending, .available').each(function() {
+            $(this).parent().css('background-color', 'rgba(255, 255, 0, .25);');
         });
 
         $('button[name="download"]').click(function () {
@@ -67,9 +85,7 @@
                 success: function( data ) {
                     data = $.parseJSON(data);
                     if (data.result) {
-                        update_status(row, 'ok');
-                        remove_postpone_btn(row);
-                        update_last_downloaded_info(row, data);
+                        update_row(row, 'ok', data);
                     }
                     else show_alert_error();
                 }
@@ -79,15 +95,14 @@
         $('button[name="postpone"]').click(function () {
             var id_serie = $(this).attr('idSerie');
             var row = '#id_'+id_serie;
-                        
+
             $.post({
                 url: '<?= base_url().'postpone_episode'; ?>',
                 data: {'id_serie': id_serie},
                 success: function( data ) {
                     data = $.parseJSON(data);
                     if (data.result) {
-                        update_status(row, 'ok');
-                        remove_postpone_btn(row);
+                        update_row(row, 'ok');
                     }
                     else show_alert_error();
                 }
