@@ -2,28 +2,32 @@
 
 class Main extends CI_Controller {
 
-    public function __construct() {
+    public function __construct() 
+    {
         parent::__construct();
         $this->load->model('Series_model');
     }
 
-    public function index() {
-        if($this->session->has_userdata('login')) redirect('following');
+    public function index() 
+    {
+        if ($this->session->has_userdata('login')) redirect('following');
         redirect('login');
     }
 
-    public function login() {
+    public function login() 
+    {
         $vars['page_title'] = 'Login';
         $this->load->view('login', $vars);
     }
 
-    public function check_login() {
+    public function check_login() 
+    {
         $this->load->model('Login_model');
         $username = $this->input->post('username');
         $password = $this->input->post('password');
 
         $result = $this->Login_model->check_user_password($username, $password);
-        if($result) {
+        if ($result) {
             $this->session->set_userdata('login', TRUE);
             redirect('following');
         }
@@ -39,40 +43,31 @@ class Main extends CI_Controller {
 
         $result = $this->Series_model->get_following();
 
-        $today = array();
+        foreach ($result as $key => $serie) {
 
-        foreach($result as $key => $serie)
-        {
             $serie_tstamp = $serie['tstamp'];
-            if(!empty($serie['next_episode_tstamp'])) $serie_tstamp = $serie['next_episode_tstamp'];
+            if (!empty($serie['next_episode_tstamp'])) $serie_tstamp = $serie['next_episode_tstamp'];
             $serie['status'] = $this->get_status($serie_tstamp, $serie['day_new_episode']);
 
-            if($serie['status'] != 'ok') {
-                $today[] = $serie['name'].' - '.$serie['season'].'x'.format_number($serie['episode_downloaded']+1);
-            }
+            if ($serie['vo']) $serie['name'] = $serie['name'].' <span class="label label-info">VOSE</span>';
 
-            if($serie['vo']) $serie['name'] = $serie['name'].' <span class="label label-info">VOSE</span>';
+            $serie['day_available'] = get_letter_num_day($serie['day_new_episode']);
 
-            $serie['day_new_episode'] = get_letter_num_day($serie['day_new_episode']);
-
-            $serie['final_episode'] = $serie['season'].'x'.format_number($serie['episodes']);
+            $serie['season_finale'] = $serie['season'].'x'.format_number($serie['episodes']);
 
             if (!empty($serie['tstamp'])) {
                 $serie['last_download'] = $this->format_last_download_date($serie['tstamp']);
             }
             else $serie['last_download'] = '';
 
-            if(!empty($serie['episode_downloaded'])) {
-                $serie['last_downloaded'] = $serie['season'].'x'.format_number($serie['episode_downloaded']);
-            }
-            else $serie['last_downloaded'] = '-';
+            if (empty($serie['episode_downloaded'])) $serie['episode_downloaded'] = 0;
+            $serie['next_episode'] = $serie['season'].'x'.format_number($serie['episode_downloaded']+1);
 
             $result[$key] = $serie;
         }
 
         $vars['series_following'] = $result;
 
-        $vars['today'] = json_encode($today);
 
         $this->load->view('main', $vars);
     }
@@ -112,12 +107,12 @@ class Main extends CI_Controller {
         return $status;
     }
 
-    public function download_episode() {
-
+    public function download_episode() 
+    {
         $id_serie = $this->input->post('id_serie');
 
         $res = FALSE;
-        if($this->Series_model->exists_tracking($id_serie)) {
+        if ($this->Series_model->exists_tracking($id_serie)) {
             $res = $this->Series_model->increment_episode($id_serie);
         }
         else $res = $this->Series_model->start_tracking($id_serie);
@@ -131,12 +126,12 @@ class Main extends CI_Controller {
         exit;
     }
 
-    public function postpone_episode() {
-
+    public function postpone_episode() 
+    {
         $id_serie = $this->input->post('id_serie');
 
         $res = FALSE;
-        if($this->Series_model->exists_tracking($id_serie)) {
+        if ($this->Series_model->exists_tracking($id_serie)) {
             $res = $this->Series_model->postpone_episode($id_serie);
         }
         else $res = TRUE;
