@@ -20,27 +20,27 @@
 
     function update_row(id_serie, action, data)
     {
-        var next_episode_col = $('#next_'+id_serie);
+        var next_download_col = $('#next_'+id_serie);
 
         //Change styles
         $('#row_'+id_serie).removeClass('highlight-row');
-        $(next_episode_col).removeClass('highlight-episode');
-        $('#status_'+id_serie).removeClass().addClass('status ok');
+        $(next_download_col).removeClass('highlight-episode');
+        $('#download_status_'+id_serie).removeClass().addClass('download_status ok');
         $('#postpone_'+id_serie).hide();
         
         if(action == 'postpone') return;
 
-        var current_episode = parseInt($(next_episode_col).attr('current-episode')) + 1;
+        var current_episode = parseInt($(next_download_col).attr('current-episode')) + 1;
         if (isNaN(current_episode)) current_episode = 1;
 
-        $(next_episode_col).attr('current-episode', current_episode);
-        if(data) $(next_episode_col).attr('last-download', data.current_date);
+        $(next_download_col).attr('current-episode', current_episode);
+        if(data) $(next_download_col).attr('last-download', data.current_date);
 
-        var season = $(next_episode_col).attr('current-season');
-        $(next_episode_col).html(season+'x'+format_number(current_episode + 1));
+        var season = $(next_download_col).attr('current-season');
+        $(next_download_col).html(season+'x'+format_number(current_episode + 1));
 
 
-        $(next_episode_col).parent().effect('highlight', '', 1000);
+        $(next_download_col).parent().effect('highlight', '', 1000);
     }
 
     $(document).ready(function () {
@@ -57,7 +57,7 @@
         //Highlight pending rows
         $('.pending, .available').each(function() {
             $(this).parent().addClass('highlight-row');
-            $(this).parent().find('.next_episode').addClass('highlight-episode');
+            $(this).parent().find('.next_download').addClass('highlight-episode');
         });
 
         $('button[name="download"]').click(function () {
@@ -109,7 +109,7 @@
         });
 
         //Initialize behaviour of popover
-        $('.next_episode').popover({
+        $('.next_download').popover({
             'container': 'body',
             'placement': 'right',
             'trigger': 'hover',
@@ -117,7 +117,7 @@
             'title': '<strong>Último descargado</strong>'
         });
 
-        $('.next_episode').on('show.bs.popover', function(){
+        $('.next_download').on('show.bs.popover', function(){
             if ($(this).attr('current-episode') == 0) $(this).attr('data-content', '-');
             else {
                 var current_season = $(this).attr('current-season');
@@ -130,7 +130,7 @@
     });
 </script>
 <style>
-    .status{
+    .download_status{
         padding: 4px !important;
         width: 0px;
     }
@@ -145,6 +145,9 @@
     }
     .pending{
         background-color: #d9534f;
+    }
+    .finished {
+        background-color: #555;
     }
 
     th:not(.name_col), td:not(.name_col){
@@ -174,7 +177,7 @@
         z-index: 1;
         text-align: center;
     }
-    .next_episode{
+    .next_download{
         cursor: pointer;
     }
 
@@ -191,7 +194,7 @@
     <table class='table table-hover'>
         <thead>
             <tr>
-                <th class='status'></th>
+                <th class='download_status'></th>
                 <th class='name_col'>Serie</th>
                 <th>Próximo capítulo</th>
                 <th>Día disponible</th>
@@ -204,22 +207,30 @@
                 $idSerie = $serie['id'];
             ?>
             <tr id='<?= 'row_'.$idSerie; ?>'>
-                <td id='<?= 'status_'.$idSerie; ?>' class='status <?= $serie['status']; ?>'></td>
-                <td class='name_col'><?= $serie['name']; ?></td>
+                <td id='<?= 'download_status_'.$idSerie; ?>' class='download_status <?= $serie['download_status']; ?>'></td>
+                <td class='name_col'><?= $serie['name']; ?>
+                    <?php if ($serie['vo']) { ?>
+                        <span class="label label-info">VOSE</span>
+                    <?php } ?>
+                </td>
                 <td>
-                    <span class='next_episode' id='<?= 'next_'.$idSerie; ?>' last-download='<?= $serie['last_download']; ?>' current-season='<?= $serie['season']; ?>' current-episode='<?= $serie['episode_downloaded']; ?>'><?= $serie['next_episode']; ?></span>
+                    <span class='next_download' id='<?= 'next_'.$idSerie; ?>' last-download='<?= $serie['date_last_download']; ?>' current-season='<?= $serie['season']; ?>' current-episode='<?= $serie['episode_downloaded']; ?>'><?= $serie['next_download']; ?></span>
                 </td>
                 <td><?= $serie['day_available']; ?></td>
                 <td><?= $serie['season_finale']; ?></td>
                 <td class='actions'>
-                    <button type='button' name='download' id='<?= 'download_'.$idSerie; ?>' class='btn btn-sm btn-primary btn-square'>
-                        <span class='glyphicon glyphicon-plus-sign'></span>
-                    </button>
-
-                    <?php if ($serie['status'] != 'ok') { ?>
-                        <button type='button' name='postpone' id='<?= 'postpone_'.$idSerie; ?>' class='btn btn-sm btn-default btn-square'>
-                            <span class='glyphicon glyphicon-time'></span>
+                    <?php if ($serie['download_status'] != 'finished') { ?>
+                        <button type='button' name='download' id='<?= 'download_'.$idSerie; ?>' class='btn btn-sm btn-primary btn-square'>
+                            <span class='glyphicon glyphicon-plus-sign'></span>
                         </button>
+
+                        <?php if ($serie['download_status'] != 'ok') { ?>
+                            <button type='button' name='postpone' id='<?= 'postpone_'.$idSerie; ?>' class='btn btn-sm btn-default btn-square'>
+                                <span class='glyphicon glyphicon-time'></span>
+                            </button>
+                        <?php } ?>
+                    <?php } else { ?>
+                        <span class="label label-danger">Finalizada</span>
                     <?php } ?>
                 </td>
             </tr>

@@ -1,5 +1,12 @@
 <?php defined('BASEPATH') OR exit('No direct script access allowed');
 
+$lang['cal_su_letter'] = 'D';
+$lang['cal_mo_letter'] = 'L';
+$lang['cal_tu_letter'] = 'M';
+$lang['cal_we_letter'] = 'X';
+$lang['cal_th_letter'] = 'J';
+$lang['cal_fr_letter'] = 'V';
+$lang['cal_sa_letter'] = 'S';
 $lang['cal_su'] = 'Do';
 $lang['cal_mo'] = 'Lu';
 $lang['cal_tu'] = 'Ma';

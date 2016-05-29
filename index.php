@@ -59,6 +59,7 @@
 	if(strpos($_SERVER['SERVER_NAME'], 'localhost') !== FALSE) $environment = 'development';
 	define('ENVIRONMENT', $environment);
 
+	date_default_timezone_set('Europe/Madrid');
 /*
  *---------------------------------------------------------------
  * ERROR REPORTING

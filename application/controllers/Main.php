@@ -43,31 +43,35 @@ class Main extends CI_Controller {
 
         $result = $this->Series_model->get_following();
 
-        foreach ($result as $key => $serie) {
+        $this->load->library('serie');
 
-            $serie_tstamp = $serie['tstamp'];
-            if (!empty($serie['next_episode_tstamp'])) $serie_tstamp = $serie['next_episode_tstamp'];
-            $serie['status'] = $this->get_status($serie_tstamp, $serie['day_new_episode']);
+        foreach ($result as $serie) {
 
-            if ($serie['vo']) $serie['name'] = $serie['name'].' <span class="label label-info">VOSE</span>';
+            $serie_data = array();
+            $this->serie = new Serie($serie);
 
-            $serie['day_available'] = get_letter_num_day($serie['day_new_episode']);
+            $serie_data['id'] = $this->serie->getId();
+            $serie_data['name'] = $this->serie->getName();
+            $serie_data['season'] = $this->serie->getSeason();
 
-            $serie['season_finale'] = $serie['season'].'x'.format_number($serie['episodes']);
+            $serie_data['vo'] = $this->serie->isVO();
 
-            if (!empty($serie['tstamp'])) {
-                $serie['last_download'] = $this->format_last_download_date($serie['tstamp']);
-            }
-            else $serie['last_download'] = '';
+            $serie_data['day_available'] = $this->serie->getLetterDayAvailable();
 
-            if (empty($serie['episode_downloaded'])) $serie['episode_downloaded'] = 0;
-            $serie['next_episode'] = $serie['season'].'x'.format_number($serie['episode_downloaded']+1);
+            $serie_data['season_finale'] = $this->serie->getSeason().'x'.$this->serie->getSeasonEpisodesFormatted();
 
-            $result[$key] = $serie;
+            $serie_data['is_season_finale'] = $this->serie->isSeasonFinale();
+
+            $serie_data['episode_downloaded'] = $this->serie->getLastEpisodeDownloaded();
+
+            $serie_data['date_last_download'] = $this->serie->getDateLastEpisodeDownloadedFormatted();
+
+            $serie_data['next_download'] = $this->serie->getSeason().'x'.$this->serie->getNextEpisodeFormatted();
+
+            $serie_data['download_status'] = $this->serie->getDownloadStatus();
+
+            $vars['series_following'][] = $serie_data;
         }
-
-        $vars['series_following'] = $result;
-
 
         $this->load->view('main', $vars);
     }
@@ -88,23 +92,6 @@ class Main extends CI_Controller {
         $hour = date('H:i', $date_tstamp);
 
         return $day_name.' '.$day.' '.$month_name.' '.$hour;
-    }
-
-    private function get_status($tstamp, $day_episode)
-    {
-        $today = date('Y-m-d');
-
-        $tstamp_day_download = strtotime(date('Y-m-d', strtotime($tstamp))); 
-        //0 = monday
-        $day_week = jddayofweek($day_episode-1, 1);
-
-        $day_next_episode = date('Y-m-d', strtotime('next '.$day_week, $tstamp_day_download)); 
-
-        $status = 'ok';
-        if ($today == $day_next_episode) $status = 'available';
-        else if ($day_next_episode < $today) $status = 'pending';
-
-        return $status;
     }
 
     public function download_episode() 

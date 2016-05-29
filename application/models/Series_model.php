@@ -10,7 +10,7 @@ class Series_model extends CI_Model {
         $query = $this->db->get('series s');
 
         if($query->num_rows() > 0) {
-            return $query->result_array();
+            return $query->result();
         }
         return false;
     }
@@ -47,11 +47,12 @@ class Series_model extends CI_Model {
     }
 
     public function exists_tracking($id_serie) {
-        $this->db->select('COUNT(1) AS count');
+        $this->db->select('1');
         $this->db->where('id_serie', $id_serie);
         $result = $this->db->get('tracking_downloaded');
 
-        return $result->row()->count;
+        if($result->num_rows() > 0) return TRUE;
+        else return FALSE;
     }
 
     public function start_tracking($id_serie) {
