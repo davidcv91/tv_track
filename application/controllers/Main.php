@@ -103,11 +103,22 @@ class Main extends CI_Controller {
             $res = $this->Series_model->increment_episode($id_serie);
         }
         else $res = $this->Series_model->start_tracking($id_serie);
-        
+
+        $serie = $this->Series_model->get_serie_following($id_serie);
+
+        $this->load->library('serie');
+        $this->serie = new Serie($serie);
+
+        $serie_data['is_season_finale'] = $this->serie->isSeasonFinale();
+        $serie_data['episode_downloaded'] = $this->serie->getLastEpisodeDownloaded();
+        $serie_data['date_last_download'] = $this->serie->getDateLastEpisodeDownloadedFormatted();
+        $serie_data['next_download'] = $this->serie->getSeason().'x'.$this->serie->getNextEpisodeFormatted();
+        $serie_data['download_status'] = $this->serie->getDownloadStatus();
+
         echo json_encode(
             array(
                 'result' => $res, 
-                'current_date' => $this->format_last_download_date(date('Y-m-d H:i'))
+                'data' => $serie_data
             )
         );
         exit;

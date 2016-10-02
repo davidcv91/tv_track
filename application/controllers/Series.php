@@ -26,9 +26,9 @@ class Series extends CI_Controller {
             else $serie['label_name'] = '<span class="label label-danger">Pendiente</span>&nbsp;';
             
             if($serie['vo'] == 1) {
-                $serie['vo_img'] = '<span class="glyphicon glyphicon-ok text-primary"></span>';
+                $serie['vo_img'] = '<span class="glyphicon glyphicon-ok"></span>';
             }
-            else $serie['vo_img'] = '<span class="glyphicon glyphicon-remove text-primary"></span>';
+            else $serie['vo_img'] = '<span class="glyphicon glyphicon-remove"></span>';
 
 
             $result[$key] = $serie;

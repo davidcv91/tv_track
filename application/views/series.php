@@ -184,6 +184,9 @@
         background-color: #d9534f;
         color: white;
     }
+    #add_serie {
+        margin-bottom: 10px;
+    }
 </style>
     <table class='table table-hover table-striped'>
         <thead>
@@ -225,8 +228,9 @@
             <?php } ?>
         </tbody>
     </table>
-    <button type='button' class='btn btn-primary pull-right' data-toggle='modal' data-target='#modal_add_serie'>
-    <span class='glyphicon glyphicon-plus'></span>&nbsp;Nueva serie</button>
+    <button type='button' id='add_serie' class='btn btn-primary pull-right' data-toggle='modal' data-target='#modal_add_serie'>
+        <span class='glyphicon glyphicon-plus'></span>&nbsp;Nueva serie
+    </button>
 
 
 <form method='POST' action='change_status' id='form_change_status'>

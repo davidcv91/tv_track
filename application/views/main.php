@@ -20,27 +20,24 @@
 
     function update_row(id_serie, action, data)
     {
-        var next_download_col = $('#next_'+id_serie);
-
         //Change styles
         $('#row_'+id_serie).removeClass('highlight-row');
-        $(next_download_col).removeClass('highlight-episode');
+        $('#next_'+id_serie).removeClass('highlight-episode');
         $('#download_status_'+id_serie).removeClass().addClass('download_status ok');
         $('#postpone_'+id_serie).hide();
         
-        if(action == 'postpone') return;
+        if (action == 'postpone') return;
 
-        var current_episode = parseInt($(next_download_col).attr('current-episode')) + 1;
-        if (isNaN(current_episode)) current_episode = 1;
+        $('#download_status_'+id_serie).removeClass().addClass('download_status '+data.download_status);
+        $('#next_'+id_serie).attr('current-episode', data.episode_downloaded);
+        $('#next_'+id_serie).attr('last-download', data.date_last_download);
+        $('#next_'+id_serie).html(data.next_download);
+        if (data.is_season_finale) {
+            $('#actions_'+id_serie).find('.label_finished_block').show();
+            $('#actions_'+id_serie).find('.buttons_block').remove();
+        }
 
-        $(next_download_col).attr('current-episode', current_episode);
-        if(data) $(next_download_col).attr('last-download', data.current_date);
-
-        var season = $(next_download_col).attr('current-season');
-        $(next_download_col).html(season+'x'+format_number(current_episode + 1));
-
-
-        $(next_download_col).parent().effect('highlight', '', 1000);
+        $('#next_'+id_serie).parent().effect('highlight', '', 1000);
     }
 
     $(document).ready(function () {
@@ -71,7 +68,7 @@
                     data = $.parseJSON(data);
 
                     if (data.result) {
-                        update_row(id_serie, 'download', data);
+                        update_row(id_serie, 'download', data.data);
                     }
                     else show_alert_error();
                 }
@@ -153,6 +150,9 @@
     th:not(.name_col), td:not(.name_col){
         text-align: center;
     }
+    table tbody tr {
+        height: 47px;
+    }
     td{
         vertical-align: middle !important;
     }
@@ -203,35 +203,37 @@
             </tr>
         </thead>
         <tbody>
-            <?php if (!empty($series_following)) foreach($series_following as $serie) { 
+        <?php 
+        if (!empty($series_following)) 
+            foreach($series_following as $serie) { 
                 $idSerie = $serie['id'];
-            ?>
+        ?>
             <tr id='<?= 'row_'.$idSerie; ?>'>
                 <td id='<?= 'download_status_'.$idSerie; ?>' class='download_status <?= $serie['download_status']; ?>'></td>
-                <td class='name_col'><?= $serie['name']; ?>
-                    <?php if ($serie['vo']) { ?>
-                        <span class="label label-info">VOSE</span>
-                    <?php } ?>
+                <td class='name_col'>
+                    <?= $serie['name']; ?>
+                    <span class='label label-info' style='<?= ($serie['vo']) ? '' : 'display:none'; ?>'>VOSE</span>
                 </td>
                 <td>
                     <span class='next_download' id='<?= 'next_'.$idSerie; ?>' last-download='<?= $serie['date_last_download']; ?>' current-season='<?= $serie['season']; ?>' current-episode='<?= $serie['episode_downloaded']; ?>'><?= $serie['next_download']; ?></span>
                 </td>
                 <td><?= $serie['day_available']; ?></td>
                 <td><?= $serie['season_finale']; ?></td>
-                <td class='actions'>
-                    <?php if ($serie['download_status'] != 'finished') { ?>
+                <td id='<?= 'actions_'.$idSerie; ?>' class='actions'>
+                    <span class='buttons_block' style='<?= ($serie['download_status'] != 'finished') ? '' : 'display:none'; ?>'>
                         <button type='button' name='download' id='<?= 'download_'.$idSerie; ?>' class='btn btn-sm btn-primary btn-square'>
                             <span class='glyphicon glyphicon-plus-sign'></span>
                         </button>
 
-                        <?php if ($serie['download_status'] != 'ok') { ?>
+                        <span class='postpone_block' style='<?= ($serie['download_status'] != 'ok') ? '' : 'display:none'; ?>'>
                             <button type='button' name='postpone' id='<?= 'postpone_'.$idSerie; ?>' class='btn btn-sm btn-default btn-square'>
                                 <span class='glyphicon glyphicon-time'></span>
                             </button>
-                        <?php } ?>
-                    <?php } else { ?>
-                        <span class="label label-danger">Finalizada</span>
-                    <?php } ?>
+                        </span>
+                    </span>
+                    <span class='label_finished_block' style='<?= ($serie['download_status'] == 'finished') ? '' : 'display:none'; ?>'>
+                        <span class='label label-danger'>Finalizada</span>
+                    </span>
                 </td>
             </tr>
             <?php } ?>

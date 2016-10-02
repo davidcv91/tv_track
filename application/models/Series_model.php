@@ -4,13 +4,25 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 class Series_model extends CI_Model {
 
     public function get_following() {
-        $this->db->join('tracking_downloaded t', 's.id = t.id_serie', 'left');
+        $this->db->join('tracking_downloaded t', 's.id = t.id_serie', 'LEFT');
         $this->db->where('status', 1);
         $this->db->order_by('day_new_episode', 'ASC');
         $query = $this->db->get('series s');
 
         if($query->num_rows() > 0) {
             return $query->result();
+        }
+        return false;
+    }
+
+    public function get_serie_following($id_serie) {
+        $this->db->from('series s');
+        $this->db->join('tracking_downloaded t', 's.id = t.id_serie', 'LEFT');
+        $this->db->where('s.id', $id_serie);
+        $query = $this->db->get();
+
+        if($query->num_rows() > 0) {
+            return $query->row();
         }
         return false;
     }
