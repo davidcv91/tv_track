@@ -93,17 +93,17 @@
         });
         
 
-        $('button[name="download"]').tooltip({
-             'container': 'body',
-             'placement': 'bottom',
-             'title': 'Descargar'
-        });
+        // $('button[name="download"]').tooltip({
+        //      'container': 'body',
+        //      'placement': 'bottom',
+        //      'title': 'Descargar'
+        // });
 
-        $('button[name="postpone"]').tooltip({
-             'container': 'body',
-             'placement': 'bottom',
-             'title': 'Posponer'
-        });
+        // $('button[name="postpone"]').tooltip({
+        //      'container': 'body',
+        //      'placement': 'bottom',
+        //      'title': 'Posponer'
+        // });
 
         //Initialize behaviour of popover
         $('.next_download').popover({
@@ -127,6 +127,9 @@
     });
 </script>
 <style>
+    table {
+        width: 100%;
+    }
     .download_status{
         padding: 4px !important;
         width: 0px;
@@ -191,11 +194,11 @@
     }
 </style>
     <div class='alert alert-danger' id='alert-error' role='alert' style='display:none;'></div>
-    <table class='table table-hover'>
+    <table class='mdl-data-table mdl-js-data-table mdl-shadow--2dp'>
         <thead>
             <tr>
                 <th class='download_status'></th>
-                <th class='name_col'>Serie</th>
+                <th class='mdl-data-table__cell--non-numeric name_col'>Serie</th>
                 <th>Próximo capítulo</th>
                 <th>Día disponible</th>
                 <th>Final</th>
@@ -210,7 +213,7 @@
         ?>
             <tr id='<?= 'row_'.$idSerie; ?>'>
                 <td id='<?= 'download_status_'.$idSerie; ?>' class='download_status <?= $serie['download_status']; ?>'></td>
-                <td class='name_col'>
+                <td class='mdl-data-table__cell--non-numeric name_col'>
                     <?= $serie['name']; ?>
                     <span class='label label-info' style='<?= ($serie['vo']) ? '' : 'display:none'; ?>'>VOSE</span>
                 </td>
@@ -221,14 +224,22 @@
                 <td><?= $serie['season_finale']; ?></td>
                 <td id='<?= 'actions_'.$idSerie; ?>' class='actions'>
                     <span class='buttons_block' style='<?= ($serie['download_status'] != 'finished') ? '' : 'display:none'; ?>'>
-                        <button type='button' name='download' id='<?= 'download_'.$idSerie; ?>' class='btn btn-sm btn-primary btn-square'>
+                        <!-- <button type='button' name='download' id='<?= 'download_'.$idSerie; ?>' class='btn btn-sm btn-primary btn-square'>
                             <span class='glyphicon glyphicon-plus-sign'></span>
-                        </button>
+                        </button> -->
+                        <button name='download' id='<?= 'download_'.$idSerie; ?>' class='mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-button--colored mdl-button--colored mdl-button--primary mdl-js-ripple-effect'>
+                                <i class='material-icons'>add_circle</i>
+                            </button>
+                            <span class='mdl-tooltip' data-mdl-for='<?= 'download_'.$idSerie; ?>'>Descargar</span>
 
                         <span class='postpone_block' style='<?= ($serie['download_status'] != 'ok') ? '' : 'display:none'; ?>'>
-                            <button type='button' name='postpone' id='<?= 'postpone_'.$idSerie; ?>' class='btn btn-sm btn-default btn-square'>
+                            <!-- <button type='button' name='postpone' id='<?= 'postpone_'.$idSerie; ?>' class='btn btn-sm btn-default btn-square'>
                                 <span class='glyphicon glyphicon-time'></span>
+                            </button> -->
+                            <button name='postpone' id='<?= 'postpone_'.$idSerie; ?>' class='mdl-button mdl-js-button mdl-button--icon mdl-js-ripple-effect'>
+                                <i class='material-icons'>update</i>
                             </button>
+                            <span class='mdl-tooltip' data-mdl-for='<?= 'postpone_'.$idSerie; ?>'>Posponer</span>
                         </span>
                     </span>
                     <span class='label_finished_block' style='<?= ($serie['download_status'] == 'finished') ? '' : 'display:none'; ?>'>

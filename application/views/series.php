@@ -4,9 +4,9 @@
     var original_value = '';
     var errors = false;
 
+
     $(document).ready(function () {
         /*Table events*/
-        $('[data-toggle="tooltip"]').tooltip();
 
         $('table tr').mouseleave(function () {
              $(this).find('.actions').css('opacity', 0);
@@ -16,12 +16,13 @@
              $(this).find('.actions').css('opacity', 1);
         });
 
-        $('.btn-change-status').click(function () {
+        $('.status_switch').click(function () {
             var id_serie = $(this).closest('tr').attr('id');
-            var current_status = $(this).attr('currentStatus');
-
-            var status = 1;
-            if(current_status == 1) status = 0;
+            
+            var status = $(this).is(':checked');
+            if (status) status = 1;
+            else status = 0;
+            show_loading($(this));
 
             change_status(id_serie, 'status', status);
             
@@ -67,19 +68,20 @@
             var row = $(this).closest('tr');
 
             var value = row.find('td .name').html();
-            modal.find('input[name="name"]').val(value);
+            $('#modal_edit_serie #name').get(0).parentNode.MaterialTextfield.change(value);
 
-            value = Boolean(parseInt(row.find('td[colname="vo"]').html()));
-            modal.find('input[name="vo"]').prop('checked', value);
+            value = Boolean(parseInt(row.find('td[colname="vo"]').attr('vo')));
+            if (value) $('#modal_edit_serie #vo').get(0).parentNode.MaterialSwitch.on();
+            else $('#modal_edit_serie #vo').get(0).parentNode.MaterialSwitch.off();
 
             value = row.find('td[colname="season"]').html();
-            modal.find('input[name="season"]').val(value);
+           $('#modal_edit_serie #season').get(0).parentNode.MaterialTextfield.change(value);
 
             value = row.find('td[colname="episodes"]').html();
-            modal.find('input[name="episodes"]').val(value);
+            $('#modal_edit_serie #episodes').get(0).parentNode.MaterialTextfield.change(value);
 
             value = row.find('td[colname="day_new_episode"]').attr('numDay');
-            modal.find('select[name="day_new_episode"]').val(value);
+            $('#modal_edit_serie #day_new_episode').get(0).parentNode.MaterialTextfield.change(value);
 
             value = $(this).closest('tr').attr('id');
             modal.find('input[name="id_serie"]').val(value);
@@ -103,6 +105,21 @@
         form.find('input[name="value"]').val(value);
 
         form.submit();
+    }
+
+    function show_loading(element) 
+    {
+        var spinner = document.createElement('div');
+        spinner.className = 'spinner mdl-spinner mdl-js-spinner is-active';
+        componentHandler.upgradeElement(spinner);
+        $(element).closest('td').append(spinner);
+        $(element).closest('.switch_container').hide();
+    }
+
+    function hide_loading(element) 
+    {
+        $(element).closest('.spinner').remove();
+        $(element).closest('.switch_container').show();
     }
 
     function validate_form_modal(modal) 
@@ -147,16 +164,19 @@
 
     function has_error(element) 
     {
-        $(element).parent().removeClass('has-success').addClass('has-error');
+        $(element).parent().addClass('is-invalid');
     }
 
     function has_success(element) 
     {
-        $(element).parent().removeClass('has-error').addClass('has-success');
+        $(element).parent().removeClass('is-invalid');
     }
 
 </script>
 <style>
+    table {
+        width: 100%;
+    }
     .name_col{
         font-weight: bold;
     }
@@ -185,13 +205,17 @@
         color: white;
     }
     #add_serie {
-        margin-bottom: 10px;
+        margin: 10px 0px;
+    }
+    .status_switch {
+        opacity: 0;
     }
 </style>
-    <table class='table table-hover table-striped'>
+    <table class='mdl-data-table mdl-js-data-table mdl-shadow--2dp'>
         <thead>
             <tr>
-                <th class='name_col'>Serie</th>
+                <th></th>
+                <th class='mdl-data-table__cell--non-numeric name_col'>Serie</th>
                 <th>VO</th>
                 <th>Temporada</th>
                 <th>Capítulo final</th>
@@ -200,37 +224,39 @@
             </tr>
         </thead>
         <tbody>
-            <?php if(!empty($series)) foreach($series as $serie) { ?>
-            <tr id='<?= $serie['id']; ?>'>
-                <td class='name_col'>
-                    <?= $serie['label_name']; ?>
+            <?php 
+            if (!empty($series)) foreach($series as $serie) { 
+                $serie_id = $serie['id'];
+            ?>
+            <tr id='<?= $serie_id; ?>'>
+                <td>
+                    <label class='mdl-switch mdl-js-switch mdl-js-ripple-effect switch_container' for='switch-<?= $serie_id; ?>'>
+                        <input type='checkbox' id='switch-<?= $serie_id; ?>' class='status_switch mdl-switch__input' <?= ($serie['status'] == 1) ? 'checked' : ''; ?>>
+                    </label>
+                </td>
+                <td class='mdl-data-table__cell--non-numeric name_col'>
                     <span class='name'><?= $serie['name']; ?></span>
                 </td>
-                <td colname='vo'><?= $serie['vo_img']; ?></td>
+                <td colname='vo' vo='<?= $serie['vo']; ?>'>
+                    <i class='material-icons'><?= ($serie['vo'] == 1) ? 'check' : 'close' ;?>
+                </td>
                 <td colname='season'><?= $serie['season']; ?></td>
                 <td colname='episodes'><?= $serie['episodes']; ?></td>
                 <td colname='day_new_episode' numDay='<?= $serie['day_new_episode']; ?>'><?= $serie['letter_day_new_episode']; ?></td>
                 <td class='actions'>
-                    <?php if($serie['status'] == 1) { ?>
-                        <button type='button' class='btn btn-sm btn-danger btn-square btn-change-status' data-toggle='tooltip' data-container='body' data-placement='bottom' title='Finalizada' currentStatus='1'>
-                            <span class='glyphicon glyphicon-pause'></span>
-                        </button>
-                     <?php } else { ?>
-                        <button type='button' class='btn btn btn-sm btn-success btn-square btn-change-status' data-toggle='tooltip' data-container='body' data-placement='bottom' title='Reanudar' currentStatus='0'>
-                            <span class='glyphicon glyphicon-play'></span>
-                        </button>
-                    <?php } ?>
-                    <button type='button' class='btn btn-sm btn-default btn-square btn-edit' data-toggle='tooltip' data-container='body' data-placement='bottom' title='Editar serie'>
-                        <span class='glyphicon glyphicon-edit'></span>
+                    <button id='edit-<?= $serie_id; ?>' class='btn-edit mdl-button mdl-js-button mdl-button--icon mdl-js-ripple-effect'>
+                        <i class='material-icons'>mode_edit</i>
                     </button>
+                    <span class='mdl-tooltip' data-mdl-for='edit-<?= $serie_id; ?>'>Editar</span>
                 </td>
             </tr>
             <?php } ?>
         </tbody>
     </table>
-    <button type='button' id='add_serie' class='btn btn-primary pull-right' data-toggle='modal' data-target='#modal_add_serie'>
-        <span class='glyphicon glyphicon-plus'></span>&nbsp;Nueva serie
+    <button type='button' id='add_serie' class='mdl-button mdl-js-button mdl-button--raised  mdl-button--colored mdl-js-ripple-effect pull-right' data-toggle='modal' data-target='#modal_add_serie'>
+        Nueva serie
     </button>
+
 
 
 <form method='POST' action='change_status' id='form_change_status'>

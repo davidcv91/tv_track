@@ -20,11 +20,6 @@ class Series extends CI_Controller {
         {
             $serie['letter_day_new_episode'] = get_letter_num_day($serie['day_new_episode']);
 
-            if($serie['status'] == 1) {
-                $serie['label_name'] = '<span class="label label-success">Siguiendo</span>&nbsp;';
-            }
-            else $serie['label_name'] = '<span class="label label-danger">Pendiente</span>&nbsp;';
-            
             if($serie['vo'] == 1) {
                 $serie['vo_img'] = '<span class="glyphicon glyphicon-ok"></span>';
             }
