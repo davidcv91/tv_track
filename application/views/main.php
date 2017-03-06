@@ -14,8 +14,7 @@
 
     function show_alert_error()
     {
-        $('#alert-error').html('Ha ocurrido un error');
-        $('#alert-error').show().delay(3000).fadeOut();
+          Materialize.toast('Ha ocurrido un error', 3000, 'rounded red darken-4');
     }
 
     function update_row(id_serie, action, data)
@@ -42,13 +41,12 @@
 
     $(document).ready(function () {
 
-        $('[data-toggle="tooltip"]').tooltip(); 
 
         $('table tr').mouseleave(function () {
-            $(this).find('.actions').css('opacity', 0);
+            $(this).find('.actions .buttons_block').css('opacity', 0);
         });
         $('table tr').mouseenter(function () {
-            $(this).find('.actions').css('opacity', 1);
+            $(this).find('.actions .buttons_block').css('opacity', 1);
         });
 
         //Highlight pending rows
@@ -57,9 +55,8 @@
             $(this).parent().find('.next_download').addClass('highlight-episode');
         });
 
-        $('button[name="download"]').click(function () {
+        $('a[name="download"]').click(function () {
             var id_serie = get_idSerie($(this).attr('id'));
-            $(this).tooltip('hide'); //For any reason tooltip keeps visible
 
             $.post({
                 url: '<?= base_url().'download_episode'; ?>',
@@ -75,7 +72,7 @@
             });
         });
 
-        $('button[name="postpone"]').click(function () {
+        $('a[name="postpone"]').click(function () {
             var id_serie = get_idSerie($(this).attr('id'));
 
             $.post({
@@ -92,45 +89,20 @@
             });
         });
         
-
-        $('button[name="download"]').tooltip({
-             'container': 'body',
-             'placement': 'bottom',
-             'title': 'Descargar'
-        });
-
-        $('button[name="postpone"]').tooltip({
-             'container': 'body',
-             'placement': 'bottom',
-             'title': 'Posponer'
-        });
-
-        //Initialize behaviour of popover
-        $('.next_download').popover({
-            'container': 'body',
-            'placement': 'right',
-            'trigger': 'hover',
-            'html': true,
-            'title': '<strong>Último descargado</strong>'
-        });
-
-        $('.next_download').on('show.bs.popover', function(){
+        $('.next_download').click(function(event) {
             if ($(this).attr('current-episode') == 0) $(this).attr('data-content', '-');
             else {
+                var header = 'Último descargado<br>';
                 var current_season = $(this).attr('current-season');
                 var current_episode = format_number($(this).attr('current-episode'));
                 var date = $(this).attr('last-download');
-                $(this).attr('data-content', current_season+'x'+current_episode+'<br>'+date);
+                Materialize.toast(header+current_season+'x'+current_episode+'<br>'+date, 5000);
             }
         });
 
     });
 </script>
 <style>
-    .download_status{
-        padding: 4px !important;
-        width: 0px;
-    }
     .name_col{
         font-weight: bold;
     }
@@ -150,22 +122,7 @@
     th:not(.name_col), td:not(.name_col){
         text-align: center;
     }
-    table tbody tr {
-        height: 47px;
-    }
-    td{
-        vertical-align: middle !important;
-    }
-    .btn-square {
-        width: 30px;
-        height: 30px;
-        padding: 6px 0;
-        font-size: 12px;
-    }
-    .glyphicon{
-        font-size: 15px;
-    }
-    .actions {
+    .actions .buttons_block {
         opacity: 0;
     }
     .alert{
@@ -189,9 +146,13 @@
         color: #d9534f;
         font-size: 18px;
     }
+    /*Fix VO badge*/
+    span.center {
+        float: none;
+    }
 </style>
-    <div class='alert alert-danger' id='alert-error' role='alert' style='display:none;'></div>
-    <table class='table table-hover'>
+<div class="row">
+    <table class='bordered hoverable'>
         <thead>
             <tr>
                 <th class='download_status'></th>
@@ -208,36 +169,34 @@
             foreach($series_following as $serie) { 
                 $idSerie = $serie['id'];
         ?>
-            <tr id='<?= 'row_'.$idSerie; ?>'>
+            <tr id='<?= 'row_'.$idSerie; ?>' class='hoverable'>
                 <td id='<?= 'download_status_'.$idSerie; ?>' class='download_status <?= $serie['download_status']; ?>'></td>
                 <td class='name_col'>
                     <?= $serie['name']; ?>
-                    <span class='label label-info' style='<?= ($serie['vo']) ? '' : 'display:none'; ?>'>VOSE</span>
+                      <span class="new badge blue lighten-1 center" data-badge-caption="VO" style='<?= ($serie['vo']) ? '' : 'display:none'; ?>'></span>
                 </td>
                 <td>
-                    <span class='next_download' id='<?= 'next_'.$idSerie; ?>' last-download='<?= $serie['date_last_download']; ?>' current-season='<?= $serie['season']; ?>' current-episode='<?= $serie['episode_downloaded']; ?>'><?= $serie['next_download']; ?></span>
+                    <span class='next_download tooltipped' id='<?= 'next_'.$idSerie; ?>' last-download='<?= $serie['date_last_download']; ?>' current-season='<?= $serie['season']; ?>' current-episode='<?= $serie['episode_downloaded']; ?>' data-position='bottom' data-tooltip='Click para ver el último capítulo descargado' data-delay='700'><?= $serie['next_download']; ?></span>
                 </td>
                 <td><?= $serie['day_available']; ?></td>
                 <td><?= $serie['season_finale']; ?></td>
                 <td id='<?= 'actions_'.$idSerie; ?>' class='actions'>
                     <span class='buttons_block' style='<?= ($serie['download_status'] != 'finished') ? '' : 'display:none'; ?>'>
-                        <button type='button' name='download' id='<?= 'download_'.$idSerie; ?>' class='btn btn-sm btn-primary btn-square'>
-                            <span class='glyphicon glyphicon-plus-sign'></span>
-                        </button>
+                        
+                        <a name='download' id='<?= 'download_'.$idSerie; ?>' class="btn-floating light-blue darken-2 waves-effect waves-light tooltipped" data-position='bottom' data-tooltip='Descargar' data-delay='50'><i class="material-icons">add</i></a>
+ 
 
                         <span class='postpone_block' style='<?= ($serie['download_status'] != 'ok') ? '' : 'display:none'; ?>'>
-                            <button type='button' name='postpone' id='<?= 'postpone_'.$idSerie; ?>' class='btn btn-sm btn-default btn-square'>
-                                <span class='glyphicon glyphicon-time'></span>
-                            </button>
+                            <a name='postpone' id='<?= 'postpone_'.$idSerie; ?>' class="btn-floating blue-grey waves-effect waves-light tooltipped" data-position='bottom' data-tooltip='Posponer' data-delay='50'><i class="material-icons">restore</i></a>
                         </span>
                     </span>
                     <span class='label_finished_block' style='<?= ($serie['download_status'] == 'finished') ? '' : 'display:none'; ?>'>
-                        <span class='label label-danger'>Finalizada</span>
+                        <span class="new badge red lighten-1 center" data-badge-caption=""><strong>Finalizada</strong></span>
                     </span>
                 </td>
             </tr>
             <?php } ?>
         </tbody>
     </table>
-
+</div> <!-- .row -->
 <?php $this->load->view('footer'); ?>

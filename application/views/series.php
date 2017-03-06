@@ -1,12 +1,24 @@
 <?php $this->load->view('header'); ?>
-
+<style type="text/css">
+    /*Fix style of validation on select element*/
+    .select-wrapper input.select-dropdown.valid {
+        border-bottom-color: #4CAF50;
+    }
+    .select-wrapper input.select-dropdown.invalid {
+        border-bottom-color: #F44336;
+    }
+</style>
 <script type='text/javascript'>
     var original_value = '';
     var errors = false;
 
     $(document).ready(function () {
         /*Table events*/
-        $('[data-toggle="tooltip"]').tooltip();
+
+        $('#modal_add_serie').modal();
+        $('#modal_edit_serie').modal();
+        $('#modal_delete_serie').modal();
+        $('select').material_select();  
 
         $('table tr').mouseleave(function () {
              $(this).find('.actions').css('opacity', 0);
@@ -48,47 +60,50 @@
         });
 
         $('.btn-delete').click(function () {
+
             var edit_modal = $('#modal_edit_serie');
-            var name_serie = edit_modal.find('input[name="name"]').val();
-            var id_serie =  edit_modal.find('input[name="id_serie"]').val();
-            edit_modal.modal('hide');
+            var name_serie = edit_modal.find('#name_modal').val();
+            var id_serie =  edit_modal.find('#id_serie_modal').val();
+            edit_modal.modal('close');
 
             var delete_modal = $('#modal_delete_serie');
 
-            delete_modal.find('.name_serie').html(name_serie);
-            delete_modal.find('input[name="id_serie"]').val(id_serie);
+            delete_modal.find('.name_serie_delete').html(name_serie);
+            delete_modal.find('#id_serie_delete').val(id_serie);
 
-            delete_modal.modal('show');
+            delete_modal.modal('open');
         });
 
         $('.btn-edit').click(function() {
             var modal = $('#modal_edit_serie');
-
             var row = $(this).closest('tr');
+            var input_value = '';
 
-            var value = row.find('td .name').html();
-            modal.find('input[name="name"]').val(value);
+            input_value = row.find('td .name').html();
+            modal.find('#name_modal').val(input_value);
 
-            value = Boolean(parseInt(row.find('td[colname="vo"]').html()));
-            modal.find('input[name="vo"]').prop('checked', value);
+            input_value = row.find('td[colname="vo"]').children().hasClass('enabled');
+            modal.find('#vo_modal').prop('checked', input_value);
 
-            value = row.find('td[colname="season"]').html();
-            modal.find('input[name="season"]').val(value);
+            input_value = row.find('td[colname="season"]').html();
+            modal.find('#season_modal').val(input_value);
 
-            value = row.find('td[colname="episodes"]').html();
-            modal.find('input[name="episodes"]').val(value);
+            input_value = row.find('td[colname="episodes"]').html();
+            modal.find('#episodes_modal').val(input_value);
 
-            value = row.find('td[colname="day_new_episode"]').attr('numDay');
-            modal.find('select[name="day_new_episode"]').val(value);
+            input_value = row.find('td[colname="day_new_episode"]').attr('numDay');
+            modal.find('#day_new_episode_modal').val(input_value).material_select();
 
-            value = $(this).closest('tr').attr('id');
-            modal.find('input[name="id_serie"]').val(value);
+            input_value = $(this).closest('tr').attr('id');
+            modal.find('#id_serie_modal').val(input_value);
 
-            modal.modal('show');
+            Materialize.updateTextFields();
+
+            modal.modal('open');
         });
 
-        $('.modal').on('hidden.bs.modal', function () {
-            hide_modal($(this))
+        $('.modal').modal({
+            complete: clear_modal,
         });
 
         /*End modal events*/
@@ -138,100 +153,103 @@
         else return false;
     }
 
-    function hide_modal(modal) {
-        $(modal).find('input[type="text"], input[type="number"], input[type="hidden"]').val('');
-        $(modal).find('input[type="checkbox"]').removeAttr('checked');
-        $(modal).find('select').val(0);
-        $(modal).find('.form-group').removeClass('has-error has-success');
+    function clear_modal() 
+    {
+        $(this).find('input[type="text"], input[type="number"], input[type="hidden"]').val('');
+        $(this).find('input[type="checkbox"]').removeAttr('checked');
+        $(this).find('select').val(0).material_select();
+        $(this).find('.validate, .select-dropdown').removeClass('valid invalid');
+        Materialize.updateTextFields();
     }
 
     function has_error(element) 
     {
-        $(element).parent().removeClass('has-success').addClass('has-error');
+        $(element).removeClass('valid').addClass('invalid');
+        if ($(element).is('select')) {
+            $(element).parent().find('.select-dropdown').removeClass('valid').addClass('invalid');
+        }
     }
 
     function has_success(element) 
     {
-        $(element).parent().removeClass('has-error').addClass('has-success');
+        $(element).removeClass('invalid').addClass('valid');
+        if ($(element).is('select')) {
+            $(element).parent().find('.select-dropdown').removeClass('invalid').addClass('valid');
+        }
     }
 
 </script>
 <style>
+    .status_col {
+        width: 5%;
+    }
     .name_col{
         font-weight: bold;
     }
     th:not(.name_col), td:not(.name_col){
         text-align: center;
     }
-    .btn-square {
-      width: 30px;
-      height: 30px;
-      padding: 6px 0;
-      font-size: 12px;
-    }
     .actions {
         opacity: 0;
-    }
-    .close{
-        color: white;
-        opacity: 1;
-    }
-    .bg-success-custom {
-        background-color: #5cb85c;
-        color: white;
-    }
-    .bg-danger-custom{
-        background-color: #d9534f;
-        color: white;
     }
     #add_serie {
         margin-bottom: 10px;
     }
 </style>
-    <table class='table table-hover table-striped'>
+<div class="row">
+    <table class='bordered hoverable'>
         <thead>
             <tr>
+                <th></th>
                 <th class='name_col'>Serie</th>
                 <th>VO</th>
                 <th>Temporada</th>
-                <th>Capítulo final</th>
+                <th>Capítulos</th>
                 <th>Día disponible</th>
                 <th></th>
             </tr>
         </thead>
         <tbody>
             <?php if(!empty($series)) foreach($series as $serie) { ?>
-            <tr id='<?= $serie['id']; ?>'>
+            <tr id='<?= $serie['id']; ?>' class='hoverable'>
+                <td class='status_col'>
+                    <span class="new badge green center" data-badge-caption="Siguiendo" style='<?= ($serie['status'] == 1) ? '' : 'display:none'; ?>'></span>
+                    <span class="new badge yellow darken-2 center" data-badge-caption="Pendiente" style='<?= ($serie['status'] != 1) ? '' : 'display:none'; ?>'></span>
+                </td>
                 <td class='name_col'>
-                    <?= $serie['label_name']; ?>
                     <span class='name'><?= $serie['name']; ?></span>
                 </td>
-                <td colname='vo'><?= $serie['vo_img']; ?></td>
+                <td colname='vo'>
+                    <?php if ($serie['vo']) { ?>
+                        <i class="enabled tiny material-icons">check</i>
+                    <?php } else { ?>
+
+                        <i class="disabled tiny material-icons">clear</i>
+                    <?php } ?>
+                    
+                </td>
                 <td colname='season'><?= $serie['season']; ?></td>
                 <td colname='episodes'><?= $serie['episodes']; ?></td>
                 <td colname='day_new_episode' numDay='<?= $serie['day_new_episode']; ?>'><?= $serie['letter_day_new_episode']; ?></td>
                 <td class='actions'>
                     <?php if($serie['status'] == 1) { ?>
-                        <button type='button' class='btn btn-sm btn-danger btn-square btn-change-status' data-toggle='tooltip' data-container='body' data-placement='bottom' title='Finalizada' currentStatus='1'>
-                            <span class='glyphicon glyphicon-pause'></span>
-                        </button>
+                        <a currentStatus='1' class="btn-floating red waves-effect waves-light tooltipped btn-change-status" data-position='bottom' data-tooltip='Finalizada' data-delay='50'><i class="material-icons">pause</i></a>
+
                      <?php } else { ?>
-                        <button type='button' class='btn btn btn-sm btn-success btn-square btn-change-status' data-toggle='tooltip' data-container='body' data-placement='bottom' title='Reanudar' currentStatus='0'>
-                            <span class='glyphicon glyphicon-play'></span>
-                        </button>
+                        <a currentStatus='0' class="btn-floating green waves-effect waves-light tooltipped btn-change-status" data-position='bottom' data-tooltip='Reanudar' data-delay='50'><i class="material-icons">play_arrow</i></a>
                     <?php } ?>
-                    <button type='button' class='btn btn-sm btn-default btn-square btn-edit' data-toggle='tooltip' data-container='body' data-placement='bottom' title='Editar serie'>
-                        <span class='glyphicon glyphicon-edit'></span>
-                    </button>
+                    <a class="btn-floating blue waves-effect waves-light tooltipped btn-edit" data-position='bottom' data-tooltip='Editar serie' data-delay='50'><i class="material-icons">mode_edit</i></a>
                 </td>
             </tr>
             <?php } ?>
         </tbody>
     </table>
-    <button type='button' id='add_serie' class='btn btn-primary pull-right' data-toggle='modal' data-target='#modal_add_serie'>
-        <span class='glyphicon glyphicon-plus'></span>&nbsp;Nueva serie
-    </button>
-
+    <div id='add_serie' class="fixed-action-btn" data-target='modal_add_serie'>
+        <a class="btn-floating light-blue btn-large waves-effect waves-dark hoverable">
+            <i class="large material-icons">add</i>
+        </a>
+    </div>
+</div>
 
 <form method='POST' action='change_status' id='form_change_status'>
     <input type='hidden' name='id_serie'>

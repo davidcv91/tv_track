@@ -29,7 +29,7 @@ switch(ENVIRONMENT == 'development'){
         $config['base_url'] = 'http://localhost/tv_track/';
     break;
     default:
-        $config['base_url'] = 'http://tvtrack.sgcm.es/';
+        $config['base_url'] = 'http://tvtrack.davidcv.tech/';
     break;
 }
 
