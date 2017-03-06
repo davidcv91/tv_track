@@ -8,6 +8,7 @@ $route['translate_uri_dashes'] = FALSE;
 $route['download_episode'] = 'main/download_episode';
 $route['postpone_episode'] = 'main/postpone_episode';
 $route['login'] = 'main/login';
+$route['check_login'] = 'main/check_login';
 $route['following'] = 'main/following';
 
 $route['change_status'] = 'series/change_status_serie';
