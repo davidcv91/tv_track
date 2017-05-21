@@ -70,6 +70,10 @@ class Main extends CI_Controller {
 
             $serie_data['download_status'] = $this->serie->getDownloadStatus();
 
+            $serie_data['download_link'] = $this->serie->getDownloadLink();
+
+            $serie_data['subtitles_link'] = $this->serie->getSubtitlesLink();
+
             $vars['series_following'][] = $serie_data;
         }
 

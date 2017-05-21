@@ -94,6 +94,10 @@
             input_value = row.find('td[colname="day_new_episode"]').attr('numDay');
             modal.find('#day_new_episode_modal').val(input_value).material_select();
 
+            input_value = $.parseJSON(row.find('td[colname="all_data"]').attr('data'));
+            modal.find('#download_link_modal').val(input_value.download_link);
+            modal.find('#subtitles_link').val(input_value.subtitles_link);
+
             input_value = $(this).closest('tr').attr('id');
             modal.find('#id_serie_modal').val(input_value);
 
@@ -240,6 +244,7 @@
                     <?php } ?>
                     <a class="btn-floating blue waves-effect waves-light tooltipped btn-edit" data-position='bottom' data-tooltip='Editar serie' data-delay='50'><i class="material-icons">mode_edit</i></a>
                 </td>
+                <td colname='all_data' data='<?= json_encode($serie); ?>' style='display: none;'></td>
             </tr>
             <?php } ?>
         </tbody>

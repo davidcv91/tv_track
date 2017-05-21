@@ -106,6 +106,10 @@
     .name_col{
         font-weight: bold;
     }
+    .name_col .links {
+        vertical-align: middle;
+        margin-left: 5px;
+    }
     .ok{
         background-color: #5cb85c;
     }
@@ -152,7 +156,7 @@
     }
 </style>
 <div class="row">
-    <table class='bordered hoverable'>
+    <table class='bordered'>
         <thead>
             <tr>
                 <th class='download_status'></th>
@@ -173,7 +177,16 @@
                 <td id='<?= 'download_status_'.$idSerie; ?>' class='download_status <?= $serie['download_status']; ?>'></td>
                 <td class='name_col'>
                     <?= $serie['name']; ?>
-                      <span class="new badge blue lighten-1 center" data-badge-caption="VO" style='<?= ($serie['vo']) ? '' : 'display:none'; ?>'></span>
+                    <span class='links'>
+                    <?php if (!empty($serie['download_link'])) { ?>
+                        <a href='<?= $serie['download_link']; ?>' target='_blank'><i class='tiny material-icons'>cloud_download</i></a>
+                    <?php } ?>
+                    <?php if (!empty($serie['subtitles_link'])) { ?>
+                        <a href='<?= $serie['subtitles_link']; ?>' target='_blank'><i class='tiny material-icons'>subtitles</i></a>
+                    <?php } ?>
+                    </span>
+                    
+                    <span class="new badge blue lighten-1 center" data-badge-caption="VO" style='<?= ($serie['vo']) ? '' : 'display:none'; ?>'></span>
                 </td>
                 <td>
                     <span class='next_download tooltipped' id='<?= 'next_'.$idSerie; ?>' last-download='<?= $serie['date_last_download']; ?>' current-season='<?= $serie['season']; ?>' current-episode='<?= $serie['episode_downloaded']; ?>' data-position='bottom' data-tooltip='Click para ver el último capítulo descargado' data-delay='700'><?= $serie['next_download']; ?></span>

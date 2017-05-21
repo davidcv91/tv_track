@@ -68,7 +68,9 @@ class Series extends CI_Controller {
             'vo' => ($this->input->post('vo')) ? 1 : 0,
             'season' => $this->input->post('season'),
             'episodes' => $this->input->post('episodes'),
-            'day_new_episode' => $this->input->post('day_new_episode')
+            'day_new_episode' => $this->input->post('day_new_episode'),
+            'download_link' => $this->input->post('download_link'),
+            'subtitles_link' => $this->input->post('subtitles_link'),
         );
 
         return $data;

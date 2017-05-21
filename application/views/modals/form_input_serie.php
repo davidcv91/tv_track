@@ -42,4 +42,16 @@
         <label for='day_new_episode_modal'>Día disponible:</label>
     </div>
 </div>
+<div class='row'>
+    <div class='input-field col s6'>
+        <input name='download_link' id='download_link_modal' type='text' class="validate">
+        <label for='download_link_modal'>Página de descarga:</label>
+    </div>
+
+    <div class='input-field col s6'>
+        <input name='subtitles_link' id='subtitles_link_modal' type='text' class="validate">
+        <label for='subtitles_link_modal'>Página de subtitulos:</label>
+    </div>
+</div>
+
 <input type='hidden' name='id_serie' id='id_serie_modal' value=''>

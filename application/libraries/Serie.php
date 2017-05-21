@@ -15,6 +15,9 @@ class Serie {
 	private $last_episode_downloaded;
 	private $date_last_episode_downloaded;
 	private $postponed;
+	private $download_link;
+	private $subtitles_link;
+
 
 	protected $CI;
 
@@ -39,6 +42,8 @@ class Serie {
 		$this->setLastEpisodeDownloaded($serie->episode_downloaded);
 		$this->setDateLastEpisodeDownloaded($serie->tstamp);
 		$this->setDateNextEpisode($serie->next_episode_tstamp);
+		$this->setDownloadLink($serie->download_link);
+		$this->setSubtitlesLink($serie->subtitles_link);
 	}
 
 	/**
@@ -103,6 +108,16 @@ class Serie {
 			$this->date_next_episode = $date_next_episode;
 			$this->postponed = TRUE;
 		}
+	}
+
+	public function setDownloadLink($download_link) 
+	{
+		$this->download_link = $download_link;
+	}
+
+	public function setSubtitlesLink($subtitles_link) 
+	{
+		$this->subtitles_link = $subtitles_link;
 	}
 
 	/**
@@ -172,7 +187,18 @@ class Serie {
 	{
 		return $this->postponed;
 	}
-//---
+
+	public function getDownloadLink() 
+	{
+		return $this->download_link;
+	}
+
+	public function getSubtitlesLink() 
+	{
+		return $this->subtitles_link;
+	}
+
+//Getters with calculations---
 	public function getSeasonEpisodesFormatted() 
 	{
 		return sprintf("%02d", $this->getSeasonEpisodes());
